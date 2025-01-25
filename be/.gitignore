@@ -1,0 +1,37 @@
+# Dependency directories
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+*.pid
+*.seed
+*.seed.*
+*.tgz
+*.tmp
+
+# Runtime data
+tmp/
+out/
+build/
+dist/
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# Editor files
+.idea/
+.vscode/
+.DS_Store
+
+# Others
+coverage/
+.nyc_output/
