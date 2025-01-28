@@ -1,6 +1,6 @@
 import adminDetails from '../../models/Admin/details.models.js'
 
-const addDetails = async(req, res)=>{
+export const addDetails = async(req, res)=>{
     try{
         let admin = await adminDetails.findOne({employeeId:req.body.employeeId})
         if(admin){
@@ -14,4 +14,18 @@ const addDetails = async(req, res)=>{
     }
 }
 
-export default addDetails;
+export const updateDetails = async(req, res)=>{
+    try{
+        let admin = await adminDetails.findOne({employeeId:req.body.employeeId})
+        if(!admin){
+            return res.status(404).json({message:"Employee ID not found"})
+        }
+        admin = await adminDetails.updateOne({employeeId:req.body.employeeId}, req.body)
+        res.status(200).json({message: 'Admin details updated successfully', data: admin})
+    }
+    catch(err){
+        res.status(500).json({message: 'Internal Server Error', data: err})
+    }
+}
+
+// export default addDetails;
