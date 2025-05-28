@@ -118,6 +118,9 @@ const MainLogin = () => {
       {/* Academic header bar */}
       <div className="header-bar"></div>
       <div className="side-accent"></div>
+      <div className="university-banner"></div>
+      <div className="academic-decoration academic-decoration-1"></div>
+      <div className="academic-decoration academic-decoration-2"></div>
       
       {/* Professional background pattern */}
       <div className="bg-pattern"></div>
