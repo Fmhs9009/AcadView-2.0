@@ -48,3 +48,6 @@ coverage/
 
 # Misc
 *.bak
+
+# Data files
+data/

@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
  
 const BranchSchema = new mongoose.Schema({
     name: {
@@ -8,4 +8,4 @@ const BranchSchema = new mongoose.Schema({
 }, { timestamps: true })
  
 const Branch = mongoose.model('Branch', BranchSchema);
-export default Branch;
+module.exports = Branch;
