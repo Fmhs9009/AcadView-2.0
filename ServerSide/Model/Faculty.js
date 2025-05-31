@@ -1,5 +1,18 @@
 // models/Faculty.js
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
+
+
+const assignedClassSchema = new mongoose.Schema({
+  subject: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Subject',
+    required: true,
+  },
+  class: {
+    type: String,
+    required: true,
+  },
+}, { _id: false });
 
 const facultySchema = new mongoose.Schema({
   name: {
@@ -29,12 +42,12 @@ const facultySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  assignedClasses: [
-    {
-      type: String, // ye dekhna hoga
-    },
-  ],
+  designation: {
+    type: String,
+    required: true,
+  },
+  assignedClasses: [assignedClassSchema],
 }, { timestamps: true });
 
 const Faculty = mongoose.model('Faculty', facultySchema);
-export default Faculty;
+module.exports = Faculty;
