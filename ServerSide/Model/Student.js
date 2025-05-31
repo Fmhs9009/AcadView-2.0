@@ -26,12 +26,14 @@ const studentSchema = new mongoose.Schema({
     unique: true,
   },
   semester: {
-    type: Number,
-    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Semester',  // Reference to the Semester model
+    required: true
   },
   branch: {
-    type: String,
-    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Branch',  // Reference to the Branch model
+    required: true
   },
   section: {
     type: String,
