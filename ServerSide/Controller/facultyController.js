@@ -3,7 +3,7 @@ const Faculty = require('../Model/Faculty')
 // Get all Faculty
 const getAllFaculties = async (req, res) => {
     try{
-        const faculties = await Faculty.find()
+        const faculties = await Faculty.find().populate('assignedClasses.subject')
 
         res.status(200).json({
             success: true,
@@ -23,7 +23,7 @@ const getAllFaculties = async (req, res) => {
 const getFacultyById = async (req, res) => {
     try{
         const facultyId = req.params.id;
-        const faculty = await Faculty.findById(facultyId)
+        const faculty = await Faculty.findById(facultyId).populate('assignedClasses.subject')
         if(!faculty){
             return res.status(404).json({
                 success: false,
