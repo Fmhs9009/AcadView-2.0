@@ -5,9 +5,11 @@ const cors = require("cors");
 const studentRoutes = require("./Routes/studentRoutes");
 const branchRoutes = require("./Routes/branchRoutes");
 const semesterRoutes = require("./Routes/semesterRoutes");
+const dotenv = require("dotenv");
+dotenv.config();
 
 const app = express();
-const port = 4444;
+const port = process.env.PORT || 3000;
 
 // app.use(express.static(path.join(__dirname, "/public")));
 app.use(cors());
@@ -24,7 +26,7 @@ app.get("/", (req, res) => {
   res.send("AcadView Server is running");
 });
 
-mongoose.connect("mongodb://localhost:27017/Acadview")
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     app.listen(port, () =>
       console.log(`Server started at http://localhost:${port}`)
