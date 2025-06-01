@@ -5,6 +5,8 @@ const cors = require("cors");
 const studentRoutes = require("./Routes/studentRoutes");
 const branchRoutes = require("./Routes/branchRoutes");
 const semesterRoutes = require("./Routes/semesterRoutes");
+const facultyRoutes = require("./Routes/facultyRoutes");
+const subjectRoutes = require("./Routes/subjectRoutes");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -20,6 +22,8 @@ app.use(express.json());
 app.use("/api/students", studentRoutes);
 app.use("/api/branches", branchRoutes);
 app.use("/api/semesters", semesterRoutes);
+app.use("/api/faculties", facultyRoutes);
+app.use("/api/subjects", subjectRoutes);
 
 // Root route
 app.get("/", (req, res) => {

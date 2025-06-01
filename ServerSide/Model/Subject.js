@@ -1,17 +1,22 @@
 // models/Subject.js
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const subjectSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
     },
-    course_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Course',
+    // course_id: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Course',
+    //     required: true,
+    // },
+    subject_id:{
+        type: String,
         required: true,
+        unique: true
     },
-    semester_id: {
+    semester: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Semester',
         required: true,
@@ -19,4 +24,4 @@ const subjectSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 const Subject = mongoose.model('Subject', subjectSchema);
-export default Subject;
+module.exports = Subject;
