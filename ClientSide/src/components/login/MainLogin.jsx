@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './login.css';
 
 // Icons for each role
@@ -34,14 +35,14 @@ const MainLogin = () => {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
+  
   const roles = [
     { name: 'Student', description: 'Access your tasks and submissions.' },
     { name: 'Faculty', description: 'Assign tasks and evaluate students.' },
     { name: 'HOD', description: 'Manage faculty and courses.' },
     { name: 'Admin', description: 'Oversee the entire system.' },
   ];
-
+  
   // Role-specific content for the left side
   const roleContent = {
     Student: {
@@ -69,7 +70,7 @@ const MainLogin = () => {
       features: ['User Management', 'System Configuration', 'Data Analytics', 'Security Controls']
     }
   };
-
+  
   const handleRoleSelect = (role) => {
     if (selectedRole === role && showLoginForm) {
       // If clicking the same role when form is already shown, do nothing
@@ -94,6 +95,7 @@ const MainLogin = () => {
     }, 300);
   };
   
+  const navigate = useNavigate();
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -109,7 +111,8 @@ const MainLogin = () => {
     // Simulate login process
     setTimeout(() => {
       setIsLoading(false);
-      alert(`Login attempt as ${selectedRole} with email: ${email}`);
+      // alert(`Login attempt as ${selectedRole} with email: ${email}`);
+      navigate('/');
     }, 1000);
   };
 
