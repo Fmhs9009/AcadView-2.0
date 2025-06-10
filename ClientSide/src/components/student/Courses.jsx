@@ -96,7 +96,7 @@ function Courses() {
                   Course Code: {course.code} • Instructor: {course.instructor}
                 </p>
               </div>
-              <span
+              {/* <span
                 className={`px-3 py-1 text-sm font-medium rounded-full ${
                   course.status === 'Ongoing'
                     ? 'bg-green-100 text-green-800'
@@ -104,11 +104,11 @@ function Courses() {
                 }`}
               >
                 {course.status}
-              </span>
+              </span> */}
             </div>
 
             {/* Progress bar */}
-            <div className="mt-2 mb-4">
+            {/* <div className="mt-2 mb-4">
               <div className="w-full bg-gray-200 rounded-full h-2.5">
                 <div
                   className="bg-blue-500 h-2.5 rounded-full"
@@ -116,7 +116,7 @@ function Courses() {
                 ></div>
               </div>
               <p className="text-xs text-gray-500 mt-1">Progress: {course.progress}%</p>
-            </div>
+            </div> */}
 
             {/* View Details Button */}
             <button
