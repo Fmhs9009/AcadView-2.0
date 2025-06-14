@@ -112,6 +112,7 @@ const MainLogin = () => {
     setTimeout(() => {
       setIsLoading(false);
       // alert(`Login attempt as ${selectedRole} with email: ${email}`);
+      localStorage.setItem("role", selectedRole);
       navigate('/');
     }, 1000);
   };
