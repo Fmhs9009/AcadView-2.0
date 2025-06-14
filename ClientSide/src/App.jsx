@@ -41,7 +41,6 @@ function LayoutWithNavbar({ NavbarComponent, handleLogout }) {
 
 function App() {
   const navigate = useNavigate();
-  const role = localStorage.getItem('role');
   const handleLogout = () => {
     localStorage.removeItem('role');
     navigate('/');
