@@ -120,6 +120,7 @@ const MainLogin = () => {
       if (selectedRole === 'Student') navigate('/student/dashboard');
       else if (selectedRole === 'Faculty') navigate('/faculty/dashboard');
       else if (selectedRole === 'Admin') navigate('/admin/dashboard');
+      else if (selectedRole === 'HOD') navigate('/hod/dashboard');
       else navigate('/');
     }, 1000);
   };
