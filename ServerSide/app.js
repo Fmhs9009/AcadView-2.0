@@ -8,6 +8,7 @@ const semesterRoutes = require("./Routes/semesterRoutes");
 const facultyRoutes = require("./Routes/facultyRoutes");
 const subjectRoutes = require("./Routes/subjectRoutes");
 const adminRoutes = require("./Routes/adminRoutes");
+const hodRoutes = require("./Routes/hodRoutes");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use("/api/semesters", semesterRoutes);
 app.use("/api/faculties", facultyRoutes);
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/admins", adminRoutes);
+app.use("/api/hods", hodRoutes);
 
 // Root route
 app.get("/", (req, res) => {

@@ -22,6 +22,9 @@ import UploadMaterial from './components/faculty/UploadMaterial.jsx';
 import UploadAssignment from './components/faculty/UploadAssignment.jsx';
 import Attendance from './components/faculty/Attendance.jsx';
 import Timetable from './components/faculty/Timetable.jsx';
+import HODDashboard from './components/hod/HODDashboard.jsx';
+import HODNavbar from './components/hod/HODNavbar.jsx';
+import HODPanel from './components/hod/HODPanel.jsx';
 
 function RequireAuth({ allowedRoles, children }) {
   const role = localStorage.getItem('role');
@@ -79,6 +82,11 @@ function App() {
         <Route path="/students/view/:id" element={<ViewStudent />} />
         <Route path="/results" element={<Results />} />
         <Route path="/profile" element={<Profile />} />
+      </Route>
+
+      {/* HOD Routes */}
+      <Route element={<RequireAuth allowedRoles={['HOD']}><LayoutWithNavbar NavbarComponent={HODNavbar} handleLogout={handleLogout} /></RequireAuth>}>
+        <Route path="/hod/*" element={<HODPanel />} />
       </Route>
 
       {/* Catch-all: redirect to login */}

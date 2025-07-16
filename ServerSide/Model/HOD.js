@@ -1,5 +1,4 @@
-// models/HOD.js
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const hodSchema = new mongoose.Schema({
   name: {
@@ -39,4 +38,4 @@ const hodSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const HOD = mongoose.model('HOD', hodSchema);
-export default HOD;
+module.exports = HOD;
