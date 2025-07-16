@@ -1,5 +1,5 @@
 // models/Admin.js
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const adminSchema = new mongoose.Schema({
   name: {
@@ -22,9 +22,13 @@ const adminSchema = new mongoose.Schema({
   },
   empId: {
     type: String,
-    required: true,
-    unique: true,
+    // required: true,
+    // unique: true,
   },
+  designation: {
+    type: String,
+    required: true,
+  }
 //   role: {
 //     type: String,
 //     enum: ['Super Admin', 'Admin'],
@@ -33,4 +37,4 @@ const adminSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const Admin = mongoose.model('Admin', adminSchema);
-export default Admin;
+module.exports = Admin;
