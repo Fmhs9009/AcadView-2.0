@@ -7,6 +7,7 @@ import HODApprovals from './HODApprovals';
 import HODStudents from './HODStudents';
 import HODFaculty from './HODFaculty';
 import HODProfile from './HODProfile';
+import DepartmentManagement from './DepartmentManagement';
 
 const HODPanel = () => {
   return (
@@ -17,6 +18,7 @@ const HODPanel = () => {
       <Route path="/students" element={<HODStudents />} />
       <Route path="/faculty" element={<HODFaculty />} />
       <Route path="/profile" element={<HODProfile />} />
+      <Route path="/department-management" element={<DepartmentManagement />} />
       <Route path="*" element={<Navigate to="/hod/dashboard" replace />} />
     </Routes>
   );

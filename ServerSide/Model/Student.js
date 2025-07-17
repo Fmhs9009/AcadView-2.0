@@ -25,11 +25,6 @@ const studentSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  semester: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Semester',  // Reference to the Semester model
-    required: true
-  },
   branch: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Branch',  // Reference to the Branch model
@@ -43,6 +38,22 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  fatherName: {
+    type: String,
+    required: true,
+  },
+  motherName: {
+    type: String,
+    required: true,
+  },
+  dob: {
+    type: Date,
+    required: true,
+  },
+  address: {
+    type: String,
+    required: false,
+  }
 }, { timestamps: true });
 
 const Student = mongoose.model('Student', studentSchema);

@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-function UploadMaterial() {
+function UploadTimetable() {
   const [batches, setBatches] = useState([]);
   const [branches, setBranches] = useState([]);
   const [sections, setSections] = useState([]);
-  const [subjects, setSubjects] = useState([]);
   
   const [selectedBatch, setSelectedBatch] = useState('');
   const [selectedBranch, setSelectedBranch] = useState('');
   const [selectedSection, setSelectedSection] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [academicYear, setAcademicYear] = useState('');
+  const [semester, setSemester] = useState('');
+  const [effectiveFrom, setEffectiveFrom] = useState('');
+  const [effectiveTo, setEffectiveTo] = useState('');
+  const [timetableType, setTimetableType] = useState('regular');
   const [file, setFile] = useState(null);
   const [classString, setClassString] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,17 +25,17 @@ function UploadMaterial() {
   useEffect(() => {
     fetchBatches();
     fetchBranches();
-    fetchSubjects();
+    // Set current academic year
+    const currentYear = new Date().getFullYear();
+    setAcademicYear(`${currentYear}-${currentYear + 1}`);
   }, []);
 
   const fetchBatches = async () => {
     try {
-      // This would be your actual API endpoint
       const response = await axios.get('/api/batches');
       setBatches(response.data.data || []);
     } catch (error) {
       console.error('Error fetching batches:', error);
-      // Fallback static data
       setBatches([
         { _id: '1', name: '2021-2025', startYear: 2021, endYear: 2025 },
         { _id: '2', name: '2022-2026', startYear: 2022, endYear: 2026 },
@@ -47,27 +50,11 @@ function UploadMaterial() {
       setBranches(response.data.data || []);
     } catch (error) {
       console.error('Error fetching branches:', error);
-      // Fallback static data
       setBranches([
         { _id: '1', name: 'CSE' },
         { _id: '2', name: 'ECE' },
         { _id: '3', name: 'ME' },
         { _id: '4', name: 'CE' }
-      ]);
-    }
-  };
-
-  const fetchSubjects = async () => {
-    try {
-      const response = await axios.get('/api/subjects');
-      setSubjects(response.data.data || []);
-    } catch (error) {
-      console.error('Error fetching subjects:', error);
-      // Fallback static data
-      setSubjects([
-        { _id: '1', name: 'Data Structures', code: 'CSE101' },
-        { _id: '2', name: 'Discrete Mathematics', code: 'MAT201' },
-        { _id: '3', name: 'Algorithms', code: 'CSE202' }
       ]);
     }
   };
@@ -78,7 +65,6 @@ function UploadMaterial() {
       setSections(response.data.data || []);
     } catch (error) {
       console.error('Error fetching sections:', error);
-      // Fallback static data
       setSections([
         { _id: '1', name: 'A' },
         { _id: '2', name: 'B' },
@@ -117,8 +103,8 @@ function UploadMaterial() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!selectedBatch || !selectedBranch || !selectedSection || !selectedSubject || !title || !file) {
-      setMessage('Please fill all required fields and select a file');
+    if (!selectedBatch || !selectedBranch || !selectedSection || !title || !academicYear || !semester || !effectiveFrom) {
+      setMessage('Please fill all required fields');
       return;
     }
 
@@ -139,27 +125,37 @@ function UploadMaterial() {
       const formData = new FormData();
       formData.append('title', title);
       formData.append('description', description);
-      formData.append('subjectId', selectedSubject);
+      formData.append('academicYear', academicYear);
+      formData.append('semester', semester);
+      formData.append('effectiveFrom', effectiveFrom);
+      formData.append('effectiveTo', effectiveTo);
+      formData.append('timetableType', timetableType);
       formData.append('classId', classId);
       formData.append('facultyId', '507f1f77bcf86cd799439011'); // Replace with actual faculty ID from auth
-      formData.append('file', file);
+      
+      if (file) {
+        formData.append('file', file);
+      }
 
-      const response = await axios.post('/api/study-materials', formData, {
+      const response = await axios.post('/api/timetables', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
 
-      setMessage('Study material uploaded successfully!');
+      setMessage('Timetable uploaded successfully!');
       // Reset form
       setTitle('');
       setDescription('');
-      setSelectedSubject('');
+      setSemester('');
+      setEffectiveFrom('');
+      setEffectiveTo('');
+      setTimetableType('regular');
       setFile(null);
       
     } catch (error) {
-      console.error('Error uploading study material:', error);
-      setMessage(error.response?.data?.message || 'Failed to upload study material');
+      console.error('Error uploading timetable:', error);
+      setMessage(error.response?.data?.message || 'Failed to upload timetable');
     } finally {
       setLoading(false);
     }
@@ -167,7 +163,7 @@ function UploadMaterial() {
 
   return (
     <div className="max-w-4xl mx-auto mt-10 bg-white p-8 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-yellow-800 mb-6">Upload Study Material</h2>
+      <h2 className="text-2xl font-bold text-blue-800 mb-6">Upload Timetable</h2>
       
       {message && (
         <div className={`mb-4 p-3 rounded ${message.includes('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
@@ -183,7 +179,7 @@ function UploadMaterial() {
             <select 
               value={selectedBatch} 
               onChange={e => setSelectedBatch(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="">Select Batch</option>
@@ -197,7 +193,7 @@ function UploadMaterial() {
             <select 
               value={selectedBranch} 
               onChange={e => setSelectedBranch(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="">Select Branch</option>
@@ -211,7 +207,7 @@ function UploadMaterial() {
             <select 
               value={selectedSection} 
               onChange={e => setSelectedSection(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
               disabled={!selectedBatch || !selectedBranch}
             >
@@ -230,42 +226,88 @@ function UploadMaterial() {
           </div>
         )}
 
-        {/* Subject Selection */}
-        <div className="mb-6">
-          <label className="block text-gray-700 mb-2 font-medium">Subject *</label>
-          <select 
-            value={selectedSubject} 
-            onChange={e => setSelectedSubject(e.target.value)} 
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-            required
-          >
-            <option value="">Select Subject</option>
-            {subjects.map(subject => (
-              <option key={subject._id} value={subject._id}>{subject.name} ({subject.code})</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Material Details */}
+        {/* Timetable Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">Title *</label>
+            <label className="block text-gray-700 mb-2 font-medium">Timetable Title *</label>
             <input 
               type="text" 
               value={title} 
               onChange={e => setTitle(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" 
-              placeholder="Enter material title"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+              placeholder="Enter timetable title"
               required
             />
           </div>
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">File *</label>
+            <label className="block text-gray-700 mb-2 font-medium">Timetable Type</label>
+            <select 
+              value={timetableType} 
+              onChange={e => setTimetableType(e.target.value)} 
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="regular">Regular</option>
+              <option value="exam">Exam</option>
+              <option value="special">Special</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div>
+            <label className="block text-gray-700 mb-2 font-medium">Academic Year *</label>
+            <input 
+              type="text" 
+              value={academicYear} 
+              onChange={e => setAcademicYear(e.target.value)} 
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+              placeholder="2023-2024"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 mb-2 font-medium">Semester *</label>
+            <select 
+              value={semester} 
+              onChange={e => setSemester(e.target.value)} 
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Select Semester</option>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
+                <option key={sem} value={sem}>{sem}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-gray-700 mb-2 font-medium">Effective From *</label>
+            <input 
+              type="date" 
+              value={effectiveFrom} 
+              onChange={e => setEffectiveFrom(e.target.value)} 
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label className="block text-gray-700 mb-2 font-medium">Effective To (Optional)</label>
+            <input 
+              type="date" 
+              value={effectiveTo} 
+              onChange={e => setEffectiveTo(e.target.value)} 
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 mb-2 font-medium">Timetable File *</label>
             <input 
               type="file" 
               onChange={e => setFile(e.target.files[0])} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-              accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.zip,.rar"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
               required
             />
           </div>
@@ -276,8 +318,8 @@ function UploadMaterial() {
           <textarea 
             value={description} 
             onChange={e => setDescription(e.target.value)} 
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" 
-            placeholder="Enter material description (optional)"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+            placeholder="Enter timetable description (optional)"
             rows="4"
           />
         </div>
@@ -286,7 +328,7 @@ function UploadMaterial() {
           <button 
             type="submit" 
             disabled={loading}
-            className="bg-yellow-600 text-white px-6 py-3 rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {loading ? (
               <>
@@ -297,7 +339,7 @@ function UploadMaterial() {
                 Uploading...
               </>
             ) : (
-              'Upload Material'
+              'Upload Timetable'
             )}
           </button>
         </div>
@@ -306,4 +348,4 @@ function UploadMaterial() {
   );
 }
 
-export default UploadMaterial;
+export default UploadTimetable;

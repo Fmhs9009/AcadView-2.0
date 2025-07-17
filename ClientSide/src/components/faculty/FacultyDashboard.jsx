@@ -64,7 +64,7 @@ function FacultyDashboard() {
       {/* Quick Access */}
       <div>
         <h2 className="text-xl font-bold text-blue-800 mb-3">🚀 Quick Actions</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
           <button onClick={() => navigate('/faculty/upload-marks')} className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500 shadow hover:shadow-md transition cursor-pointer w-full">
             <p className="font-semibold text-blue-700">Upload Marks</p>
             <p className="text-sm text-gray-600">Enter or upload student marks for your courses.</p>
@@ -80,6 +80,10 @@ function FacultyDashboard() {
           <button onClick={() => navigate('/faculty/upload-assignment')} className="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500 shadow hover:shadow-md transition cursor-pointer w-full">
             <p className="font-semibold text-purple-700">Upload Assignment</p>
             <p className="text-sm text-gray-600">Create and upload new assignments.</p>
+          </button>
+          <button onClick={() => navigate('/faculty/upload-timetable')} className="bg-indigo-50 p-4 rounded-lg border-l-4 border-indigo-500 shadow hover:shadow-md transition cursor-pointer w-full">
+            <p className="font-semibold text-indigo-700">Upload Timetable</p>
+            <p className="text-sm text-gray-600">Upload class timetables and schedules.</p>
           </button>
         </div>
       </div>
@@ -103,11 +107,12 @@ function FacultyDashboard() {
                   <td className="px-4 py-2">{course.code}</td>
                   <td className="px-4 py-2">{course.name}</td>
                   <td className="px-4 py-2">{course.students}</td>
-                  <td className="px-4 py-2 space-x-2">
-                    <button onClick={() => navigate('/faculty/upload-marks')} className="bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 text-xs">Marks</button>
-                    <button onClick={() => navigate('/faculty/upload-attendance')} className="bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-green-200 text-xs">Attendance</button>
-                    <button onClick={() => navigate('/faculty/upload-material')} className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded hover:bg-yellow-200 text-xs">Material</button>
-                    <button onClick={() => navigate('/faculty/upload-assignment')} className="bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200 text-xs">Assignment</button>
+                  <td className="px-4 py-2 space-x-1">
+                    <button onClick={() => navigate('/faculty/upload-marks')} className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 text-xs">Marks</button>
+                    <button onClick={() => navigate('/faculty/upload-attendance')} className="bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200 text-xs">Attendance</button>
+                    <button onClick={() => navigate('/faculty/upload-material')} className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded hover:bg-yellow-200 text-xs">Material</button>
+                    <button onClick={() => navigate('/faculty/upload-assignment')} className="bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200 text-xs">Assignment</button>
+                    <button onClick={() => navigate('/faculty/upload-timetable')} className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-200 text-xs">Timetable</button>
                   </td>
                 </tr>
               ))}
@@ -170,4 +175,4 @@ function FacultyDashboard() {
   );
 }
 
-export default FacultyDashboard; 
+export default FacultyDashboard;
