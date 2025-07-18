@@ -179,12 +179,86 @@ const getDepartmentStats = async (req, res) => {
   }
 };
 
+// Update faculty details
+const updateFaculty = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const facultyData = req.body;
+    
+    // Validate faculty exists
+    const existingFaculty = await Faculty.findById(id);
+    if (!existingFaculty) {
+      return res.status(404).json({ message: 'Faculty not found' });
+    }
+
+    // Update faculty
+    const updatedFaculty = await Faculty.findByIdAndUpdate(
+      id,
+      facultyData,
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json(updatedFaculty);
+  } catch (error) {
+    console.error('Error updating faculty:', error);
+    if (error.code === 11000) {
+      // Duplicate key error
+      return res.status(400).json({ message: 'Email or Employee ID already exists' });
+    }
+    res.status(500).json({ message: 'Error updating faculty', error: error.message });
+  }
+};
+
+// Update student details
+const updateStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const studentData = req.body;
+    
+    // Validate student exists
+    const existingStudent = await Student.findById(id);
+    if (!existingStudent) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    // If branch is a string, find the branch by name
+    if (typeof studentData.branch === 'string') {
+      const branch = await Branch.findOne({ name: studentData.branch });
+      if (branch) {
+        studentData.branch = branch._id;
+      } else {
+        // Create new branch if it doesn't exist
+        const newBranch = await Branch.create({ name: studentData.branch });
+        studentData.branch = newBranch._id;
+      }
+    }
+
+    // Update student
+    const updatedStudent = await Student.findByIdAndUpdate(
+      id,
+      studentData,
+      { new: true, runValidators: true }
+    ).populate('branch');
+
+    res.status(200).json(updatedStudent);
+  } catch (error) {
+    console.error('Error updating student:', error);
+    if (error.code === 11000) {
+      // Duplicate key error
+      return res.status(400).json({ message: 'Email or Enrollment Number already exists' });
+    }
+    res.status(500).json({ message: 'Error updating student', error: error.message });
+  }
+};
+
 module.exports = {
   checkDepartmentAccess,
   getDepartmentFaculty,
   getDepartmentStudents,
   addFaculty,
   addStudent,
+  updateFaculty,
+  updateStudent,
   removeFaculty,
   removeStudent,
   getDepartmentStats

@@ -27,19 +27,58 @@ import {
   DialogActions,
   Alert,
   Snackbar,
+  Tabs,
+  Tab,
+  Divider,
+  CircularProgress,
+  Tooltip,
+  Chip,
 } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, Refresh as RefreshIcon } from '@mui/icons-material';
+import { 
+  Add as AddIcon, 
+  Delete as DeleteIcon, 
+  Edit as EditIcon, 
+  Refresh as RefreshIcon,
+  School as SchoolIcon,
+  Person as PersonIcon,
+  Dashboard as DashboardIcon,
+} from '@mui/icons-material';
 
 const DepartmentManagement = () => {
+  // Tab state
+  const [activeTab, setActiveTab] = useState(0);
+  
+  // Data states
   const [faculty, setFaculty] = useState([]);
   const [students, setStudents] = useState([]);
   const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(false);
+  
+  // Filter states
   const [filters, setFilters] = useState({
     batch: '',
-    section: '',
-    semester: ''
+    section: ''
   });
+  
+  // Available batches and sections for filters
+  const [availableBatches, setAvailableBatches] = useState([]);
+  const [availableSections, setAvailableSections] = useState(['A', 'B', 'C']);
+  
+  // Dialog states
   const [openDialog, setOpenDialog] = useState('');
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    message: '',
+    confirmAction: null
+  });
+  
+  // Edit states
+  const [editMode, setEditMode] = useState(false);
+  const [selectedFacultyId, setSelectedFacultyId] = useState(null);
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
+  
+  // Form states
   const [newFaculty, setNewFaculty] = useState({
     name: '',
     email: '',
@@ -47,12 +86,9 @@ const DepartmentManagement = () => {
     gender: '',
     empId: '',
     designation: '',
-    department: '',
-    branch: '',
-    qualification: '',
-    experience: '',
-    address: ''
+    department: ''
   });
+  
   const [newStudent, setNewStudent] = useState({
     name: '',
     email: '',
@@ -71,6 +107,7 @@ const DepartmentManagement = () => {
     address: '',
     dob: ''
   });
+  
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -92,6 +129,7 @@ const DepartmentManagement = () => {
   };
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       const [facultyRes, studentsRes, statsRes] = await Promise.all([
         axios.get('/api/hod-management/faculty'),
@@ -99,15 +137,26 @@ const DepartmentManagement = () => {
         axios.get('/api/hod-management/statistics')
       ]);
 
-      setFaculty(Array.isArray(facultyRes.data) ? facultyRes.data : []);
-      setStudents(Array.isArray(studentsRes.data) ? studentsRes.data : []);
+      const facultyData = Array.isArray(facultyRes.data) ? facultyRes.data : [];
+      const studentsData = Array.isArray(studentsRes.data) ? studentsRes.data : [];
+      
+      setFaculty(facultyData);
+      setStudents(studentsData);
       setStats(statsRes.data || null);
+      
+      // Extract unique batches from students data for filter options
+      if (studentsData.length > 0) {
+        const batches = [...new Set(studentsData.map(student => student.batch))];
+        setAvailableBatches(batches.sort().reverse()); // Sort in descending order (newest first)
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       showSnackbar(error.response?.data?.message || 'Error fetching data', 'error');
       setFaculty([]);
       setStudents([]);
       setStats(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -115,67 +164,168 @@ const DepartmentManagement = () => {
     fetchData();
   }, [filters]);
 
-  const handleAddFaculty = async () => {
+  // Function to handle opening the faculty form dialog
+  const handleOpenFacultyDialog = (faculty = null) => {
+    if (faculty) {
+      // Edit mode - populate form with faculty data
+      setNewFaculty({
+        name: faculty.name,
+        email: faculty.email,
+        phoneNo: faculty.phoneNo,
+        gender: faculty.gender,
+        empId: faculty.empId,
+        designation: faculty.designation,
+        department: faculty.department || ''
+      });
+      setEditMode(true);
+      setSelectedFacultyId(faculty._id);
+    } else {
+      // Add mode - reset form
+      setNewFaculty({
+        name: '',
+        email: '',
+        phoneNo: '',
+        gender: '',
+        empId: '',
+        designation: '',
+        department: ''
+      });
+      setEditMode(false);
+      setSelectedFacultyId(null);
+    }
+    setOpenDialog('faculty');
+  };
+
+  // Function to validate faculty form
+  const validateFacultyForm = () => {
     // Check required fields
-    const requiredFields = ['name', 'email', 'phoneNo', 'gender', 'empId', 'designation', 'department', 'branch', 'qualification', 'experience'];
+    const requiredFields = ['name', 'email', 'phoneNo', 'gender', 'empId', 'designation', 'department'];
     const missingFields = requiredFields.filter(field => !newFaculty[field]);
 
     if (missingFields.length > 0) {
       showSnackbar(`Please fill all required fields: ${missingFields.join(', ')}`, 'error');
-      return;
+      return false;
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(newFaculty.email)) {
       showSnackbar('Please enter a valid email address', 'error');
-      return;
+      return false;
     }
 
     // Validate phone number (10 digits)
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(newFaculty.phoneNo)) {
       showSnackbar('Please enter a valid 10-digit phone number', 'error');
-      return;
+      return false;
     }
 
+    return true;
+  };
+
+  // Function to handle adding or updating faculty
+  const handleAddFaculty = async () => {
+    if (!validateFacultyForm()) return;
+
     try {
-      await axios.post('/api/hod-management/faculty', newFaculty);
+      if (editMode && selectedFacultyId) {
+        // Update existing faculty
+        await axios.put(`/api/hod-management/faculty/${selectedFacultyId}`, newFaculty);
+        showSnackbar('Faculty updated successfully');
+      } else {
+        // Add new faculty
+        await axios.post('/api/hod-management/faculty', newFaculty);
+        showSnackbar('Faculty added successfully');
+      }
       setOpenDialog('');
       fetchData();
-      showSnackbar('Faculty added successfully');
     } catch (error) {
-      showSnackbar(error.response?.data?.message || 'Error adding faculty', 'error');
+      showSnackbar(error.response?.data?.message || 'Error processing faculty data', 'error');
     }
   };
 
-  const handleAddStudent = async () => {
+  // Function to handle opening the student form dialog
+  const handleOpenStudentDialog = (student = null) => {
+    if (student) {
+      // Edit mode - populate form with student data
+      // Parse batch from format "YYYY-YYYY" to { from: "YYYY", to: "YYYY" }
+      const batchParts = student.batch ? student.batch.split('-') : ['', ''];
+      
+      setNewStudent({
+        name: student.name,
+        email: student.email,
+        phoneNo: student.phoneNo,
+        gender: student.gender,
+        enrollmentNo: student.enrollmentNo,
+        batch: {
+          from: batchParts[0] || '',
+          to: batchParts[1] || ''
+        },
+        section: student.section,
+        department: student.department || '',
+        branch: student.branch?.name || student.branch || '',
+        fatherName: student.fatherName || '',
+        motherName: student.motherName || '',
+        address: student.address || '',
+        dob: student.dob ? new Date(student.dob).toISOString().split('T')[0] : ''
+      });
+      setEditMode(true);
+      setSelectedStudentId(student._id);
+    } else {
+      // Add mode - reset form
+      setNewStudent({
+        name: '',
+        email: '',
+        phoneNo: '',
+        gender: '',
+        enrollmentNo: '',
+        batch: {
+          from: '',
+          to: ''
+        },
+        section: '',
+        department: '',
+        branch: '',
+        fatherName: '',
+        motherName: '',
+        address: '',
+        dob: ''
+      });
+      setEditMode(false);
+      setSelectedStudentId(null);
+    }
+    setOpenDialog('student');
+  };
+
+  // Function to validate student form
+  const validateStudentForm = () => {
     // Check required fields
     const requiredFields = ['name', 'email', 'phoneNo', 'gender', 'enrollmentNo', 'section', 'department', 'branch', 'fatherName', 'motherName', 'dob'];
     const missingFields = requiredFields.filter(field => !newStudent[field]);
 
     if (!newStudent.batch.from || !newStudent.batch.to) {
       showSnackbar('Please enter complete batch details', 'error');
-      return;
+      return false;
     }
 
     if (missingFields.length > 0) {
       showSnackbar(`Please fill all required fields: ${missingFields.join(', ')}`, 'error');
-      return;
+      return false;
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(newStudent.email)) {
       showSnackbar('Please enter a valid email address', 'error');
-      return;
+      return false;
     }
 
     // Validate phone number (10 digits)
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(newStudent.phoneNo)) {
       showSnackbar('Please enter a valid 10-digit phone number', 'error');
-      return;
+      return false;
     }
 
     // Validate batch years
@@ -183,42 +333,88 @@ const DepartmentManagement = () => {
     const batchTo = parseInt(newStudent.batch.to);
     if (isNaN(batchFrom) || isNaN(batchTo) || batchFrom >= batchTo) {
       showSnackbar('Please enter valid batch years', 'error');
-      return;
+      return false;
     }
+
+    return true;
+  };
+
+  // Function to handle adding or updating student
+  const handleAddStudent = async () => {
+    if (!validateStudentForm()) return;
 
     try {
       const semester = calculateSemester(newStudent.batch.from);
-      await axios.post('/api/hod-management/student', {
+      const studentData = {
         ...newStudent,
         batch: `${newStudent.batch.from}-${newStudent.batch.to}`,
         semester
-      });
+      };
+
+      if (editMode && selectedStudentId) {
+        // Update existing student
+        await axios.put(`/api/hod-management/student/${selectedStudentId}`, studentData);
+        showSnackbar('Student updated successfully');
+      } else {
+        // Add new student
+        await axios.post('/api/hod-management/student', studentData);
+        showSnackbar('Student added successfully');
+      }
       setOpenDialog('');
       fetchData();
-      showSnackbar('Student added successfully');
     } catch (error) {
-      showSnackbar(error.response?.data?.message || 'Error adding student', 'error');
+      showSnackbar(error.response?.data?.message || 'Error processing student data', 'error');
     }
   };
 
   const handleRemoveFaculty = async (id) => {
-    try {
-      await axios.delete(`/api/hod-management/faculty/${id}`);
-      fetchData();
-      showSnackbar('Faculty removed successfully');
-    } catch (error) {
-      showSnackbar('Error removing faculty', 'error');
-    }
+    // Open confirmation dialog
+    setConfirmDialog({
+      open: true,
+      title: 'Remove Faculty',
+      message: 'Are you sure you want to remove this faculty member? This action cannot be undone.',
+      confirmAction: async () => {
+        try {
+          await axios.delete(`/api/hod-management/faculty/${id}`);
+          fetchData();
+          showSnackbar('Faculty removed successfully');
+        } catch (error) {
+          showSnackbar(error.response?.data?.message || 'Error removing faculty', 'error');
+        } finally {
+          // Close confirmation dialog
+          setConfirmDialog({ ...confirmDialog, open: false });
+        }
+      },
+      cancelAction: () => {
+        // Close confirmation dialog
+        setConfirmDialog({ ...confirmDialog, open: false });
+      }
+    });
   };
 
   const handleRemoveStudent = async (id) => {
-    try {
-      await axios.delete(`/api/hod-management/student/${id}`);
-      fetchData();
-      showSnackbar('Student removed successfully');
-    } catch (error) {
-      showSnackbar('Error removing student', 'error');
-    }
+    // Open confirmation dialog
+    setConfirmDialog({
+      open: true,
+      title: 'Remove Student',
+      message: 'Are you sure you want to remove this student? This action cannot be undone.',
+      confirmAction: async () => {
+        try {
+          await axios.delete(`/api/hod-management/student/${id}`);
+          fetchData();
+          showSnackbar('Student removed successfully');
+        } catch (error) {
+          showSnackbar(error.response?.data?.message || 'Error removing student', 'error');
+        } finally {
+          // Close confirmation dialog
+          setConfirmDialog({ ...confirmDialog, open: false });
+        }
+      },
+      cancelAction: () => {
+        // Close confirmation dialog
+        setConfirmDialog({ ...confirmDialog, open: false });
+      }
+    });
   };
 
   const showSnackbar = (message, severity = 'success') => {
@@ -230,148 +426,293 @@ const DepartmentManagement = () => {
       <Grid container spacing={3}>
         {/* Statistics Cards */}
         <Grid item xs={12}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card>
-                <CardContent>
-                  <Typography color="textSecondary" gutterBottom>Total Faculty</Typography>
-                  <Typography variant="h5">{stats?.facultyCount || 0}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card>
-                <CardContent>
-                  <Typography color="textSecondary" gutterBottom>Total Students</Typography>
-                  <Typography variant="h5">{stats?.studentCount || 0}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Box display="flex" alignItems="center" mb={2}>
+                <DashboardIcon sx={{ mr: 1 }} color="primary" />
+                <Typography variant="h6">Department Dashboard</Typography>
+              </Box>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography color="textSecondary" gutterBottom>Total Faculty</Typography>
+                      <Typography variant="h5">{stats?.facultyCount || 0}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography color="textSecondary" gutterBottom>Total Students</Typography>
+                      <Typography variant="h5">{stats?.studentCount || 0}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
         </Grid>
 
-        {/* Faculty Section */}
+        {/* Management Tabs */}
         <Grid item xs={12}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h6">Faculty Members</Typography>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setOpenDialog('faculty')}
-            >
-              Add Faculty
-            </Button>
-          </Box>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Employee ID</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Phone</TableCell>
-                  <TableCell>Designation</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {faculty.map((f) => (
-                  <TableRow key={f._id}>
-                    <TableCell>{f.name}</TableCell>
-                    <TableCell>{f.empId}</TableCell>
-                    <TableCell>{f.email}</TableCell>
-                    <TableCell>{f.phoneNo}</TableCell>
-                    <TableCell>{f.designation}</TableCell>
-                    <TableCell>
-                      <IconButton onClick={() => handleRemoveFaculty(f._id)} color="error">
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Grid>
-
-        {/* Students Section */}
-        <Grid item xs={12}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h6">Students</Typography>
-            <Box display="flex" gap={2}>
-              <FormControl size="small">
-                <InputLabel>Batch</InputLabel>
-                <Select
-                  value={filters.batch}
-                  label="Batch"
-                  onChange={(e) => setFilters({ ...filters, batch: e.target.value })}
-                  style={{ minWidth: 120 }}
-                >
-                  <MenuItem value="">All</MenuItem>
-                  {/* Add batch options dynamically */}
-                </Select>
-              </FormControl>
-              <FormControl size="small">
-                <InputLabel>Section</InputLabel>
-                <Select
-                  value={filters.section}
-                  label="Section"
-                  onChange={(e) => setFilters({ ...filters, section: e.target.value })}
-                  style={{ minWidth: 120 }}
-                >
-                  <MenuItem value="">All</MenuItem>
-                  <MenuItem value="A">A</MenuItem>
-                  <MenuItem value="B">B</MenuItem>
-                  <MenuItem value="C">C</MenuItem>
-                </Select>
-              </FormControl>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setOpenDialog('student')}
+          <Card>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+              <Tabs 
+                value={activeTab} 
+                onChange={(e, newValue) => setActiveTab(newValue)}
+                aria-label="department management tabs"
               >
-                Add Student
-              </Button>
+                <Tab 
+                  icon={<PersonIcon />} 
+                  label="Faculty Management" 
+                  id="tab-0" 
+                  aria-controls="tabpanel-0" 
+                />
+                <Tab 
+                  icon={<SchoolIcon />} 
+                  label="Student Management" 
+                  id="tab-1" 
+                  aria-controls="tabpanel-1" 
+                />
+              </Tabs>
             </Box>
-          </Box>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Enrollment No</TableCell>
-                  <TableCell>Batch</TableCell>
-                  <TableCell>Section</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Phone</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {students.map((s) => (
-                  <TableRow key={s._id}>
-                    <TableCell>{s.name}</TableCell>
-                    <TableCell>{s.enrollmentNo}</TableCell>
-                    <TableCell>{s.batch}</TableCell>
-                    <TableCell>{s.section}</TableCell>
-                    <TableCell>{s.email}</TableCell>
-                    <TableCell>{s.phoneNo}</TableCell>
-                    <TableCell>
-                      <IconButton onClick={() => handleRemoveStudent(s._id)} color="error">
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+            
+            {/* Faculty Management Tab */}
+            <Box
+              role="tabpanel"
+              hidden={activeTab !== 0}
+              id="tabpanel-0"
+              aria-labelledby="tab-0"
+              sx={{ p: 3 }}
+            >
+              {activeTab === 0 && (
+                <>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                    <Typography variant="h6">Faculty Members</Typography>
+                    <Box display="flex" gap={1}>
+                      <Button
+                        variant="outlined"
+                        startIcon={<RefreshIcon />}
+                        onClick={fetchData}
+                        disabled={loading}
+                      >
+                        Refresh
+                      </Button>
+                      <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => handleOpenFacultyDialog()}
+                      >
+                        Add Faculty
+                      </Button>
+                    </Box>
+                  </Box>
+                  
+                  {loading ? (
+                    <Box display="flex" justifyContent="center" my={4}>
+                      <CircularProgress />
+                    </Box>
+                  ) : (
+                    <TableContainer component={Paper}>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Name</TableCell>
+                            <TableCell>Employee ID</TableCell>
+                            <TableCell>Email</TableCell>
+                            <TableCell>Phone</TableCell>
+                            <TableCell>Department</TableCell>
+                            <TableCell>Designation</TableCell>
+                            <TableCell align="center">Actions</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {faculty.length > 0 ? (
+                            faculty.map((f) => (
+                              <TableRow key={f._id}>
+                                <TableCell>{f.name}</TableCell>
+                                <TableCell>{f.empId}</TableCell>
+                                <TableCell>{f.email}</TableCell>
+                                <TableCell>{f.phoneNo}</TableCell>
+                                <TableCell>{f.department}</TableCell>
+                                <TableCell>{f.designation}</TableCell>
+                                <TableCell align="center">
+                                  <Tooltip title="Edit Faculty">
+                                    <IconButton 
+                                      onClick={() => handleOpenFacultyDialog(f)} 
+                                      color="primary"
+                                      size="small"
+                                      sx={{ mr: 1 }}
+                                    >
+                                      <EditIcon />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Remove Faculty">
+                                    <IconButton 
+                                      onClick={() => handleRemoveFaculty(f._id)} 
+                                      color="error"
+                                      size="small"
+                                    >
+                                      <DeleteIcon />
+                                    </IconButton>
+                                  </Tooltip>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={7} align="center">
+                                No faculty members found
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  )}
+                </>
+              )}
+            </Box>
+            
+            {/* Student Management Tab */}
+            <Box
+              role="tabpanel"
+              hidden={activeTab !== 1}
+              id="tabpanel-1"
+              aria-labelledby="tab-1"
+              sx={{ p: 3 }}
+            >
+              {activeTab === 1 && (
+                <>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                    <Typography variant="h6">Students</Typography>
+                    <Box display="flex" gap={1}>
+                      <FormControl size="small">
+                        <InputLabel>Batch</InputLabel>
+                        <Select
+                          value={filters.batch}
+                          label="Batch"
+                          onChange={(e) => setFilters({ ...filters, batch: e.target.value })}
+                          style={{ minWidth: 120 }}
+                        >
+                          <MenuItem value="">All</MenuItem>
+                          {availableBatches.map((batch) => (
+                            <MenuItem key={batch} value={batch}>{batch}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      <FormControl size="small">
+                        <InputLabel>Section</InputLabel>
+                        <Select
+                          value={filters.section}
+                          label="Section"
+                          onChange={(e) => setFilters({ ...filters, section: e.target.value })}
+                          style={{ minWidth: 120 }}
+                        >
+                          <MenuItem value="">All</MenuItem>
+                          {availableSections.map((section) => (
+                            <MenuItem key={section} value={section}>{section}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      <Button
+                        variant="outlined"
+                        startIcon={<RefreshIcon />}
+                        onClick={fetchData}
+                        disabled={loading}
+                      >
+                        Refresh
+                      </Button>
+                      <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => handleOpenStudentDialog()}
+                      >
+                        Add Student
+                      </Button>
+                    </Box>
+                  </Box>
+                  
+                  {loading ? (
+                    <Box display="flex" justifyContent="center" my={4}>
+                      <CircularProgress />
+                    </Box>
+                  ) : (
+                    <TableContainer component={Paper}>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Name</TableCell>
+                            <TableCell>Enrollment No</TableCell>
+                            <TableCell>Batch</TableCell>
+                            <TableCell>Section</TableCell>
+                            <TableCell>Branch</TableCell>
+                            <TableCell>Email</TableCell>
+                            <TableCell align="center">Actions</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {students.length > 0 ? (
+                            students.map((s) => (
+                              <TableRow key={s._id}>
+                                <TableCell>{s.name}</TableCell>
+                                <TableCell>{s.enrollmentNo}</TableCell>
+                                <TableCell>{s.batch}</TableCell>
+                                <TableCell>
+                                  <Chip 
+                                    label={s.section} 
+                                    size="small" 
+                                    color="primary" 
+                                    variant="outlined"
+                                  />
+                                </TableCell>
+                                <TableCell>{s.branch?.name || s.branch || '-'}</TableCell>
+                                <TableCell>{s.email}</TableCell>
+                                <TableCell align="center">
+                                  <Tooltip title="Edit Student">
+                                    <IconButton 
+                                      onClick={() => handleOpenStudentDialog(s)} 
+                                      color="primary"
+                                      size="small"
+                                      sx={{ mr: 1 }}
+                                    >
+                                      <EditIcon />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Remove Student">
+                                    <IconButton 
+                                      onClick={() => handleRemoveStudent(s._id)} 
+                                      color="error"
+                                      size="small"
+                                    >
+                                      <DeleteIcon />
+                                    </IconButton>
+                                  </Tooltip>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={7} align="center">
+                                No students found
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  )}
+                </>
+              )}
+            </Box>
+          </Card>
         </Grid>
       </Grid>
 
-      {/* Add Faculty Dialog */}
-      <Dialog open={openDialog === 'faculty'} onClose={() => setOpenDialog('')}>
-        <DialogTitle>Add New Faculty</DialogTitle>
+      {/* Add/Edit Faculty Dialog */}
+      <Dialog open={openDialog === 'faculty'} onClose={() => setOpenDialog('')} maxWidth="md" fullWidth>
+        <DialogTitle>{editMode ? 'Edit Faculty' : 'Add New Faculty'}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12} sm={6}>
@@ -429,15 +770,6 @@ const DepartmentManagement = () => {
               <TextField
                 required
                 fullWidth
-                label="Designation"
-                value={newFaculty.designation}
-                onChange={(e) => setNewFaculty({ ...newFaculty, designation: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
                 label="Department"
                 value={newFaculty.department}
                 onChange={(e) => setNewFaculty({ ...newFaculty, department: e.target.value })}
@@ -447,9 +779,9 @@ const DepartmentManagement = () => {
               <TextField
                 required
                 fullWidth
-                label="Branch"
-                value={newFaculty.branch}
-                onChange={(e) => setNewFaculty({ ...newFaculty, branch: e.target.value })}
+                label="Designation"
+                value={newFaculty.designation}
+                onChange={(e) => setNewFaculty({ ...newFaculty, designation: e.target.value })}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -486,14 +818,14 @@ const DepartmentManagement = () => {
         <DialogActions>
           <Button onClick={() => setOpenDialog('')}>Cancel</Button>
           <Button onClick={handleAddFaculty} variant="contained" color="primary">
-            Add Faculty
+            {editMode ? 'Update Faculty' : 'Add Faculty'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Add Student Dialog */}
-      <Dialog open={openDialog === 'student'} onClose={() => setOpenDialog('')}>
-        <DialogTitle>Add New Student</DialogTitle>
+      {/* Add/Edit Student Dialog */}
+      <Dialog open={openDialog === 'student'} onClose={() => setOpenDialog('')} maxWidth="md" fullWidth>
+        <DialogTitle>{editMode ? 'Edit Student' : 'Add New Student'}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12} sm={6}>
@@ -653,7 +985,34 @@ const DepartmentManagement = () => {
         <DialogActions>
           <Button onClick={() => setOpenDialog('')}>Cancel</Button>
           <Button onClick={handleAddStudent} variant="contained" color="primary">
-            Add Student
+            {editMode ? 'Update Student' : 'Add Student'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={confirmDialog.open || false}
+        onClose={() => confirmDialog.cancelAction && confirmDialog.cancelAction()}
+      >
+        <DialogTitle>{confirmDialog.title}</DialogTitle>
+        <DialogContent>
+          <Typography>{confirmDialog.message}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => confirmDialog.cancelAction && confirmDialog.cancelAction()}
+            color="primary"
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={() => confirmDialog.confirmAction && confirmDialog.confirmAction()}
+            color="error"
+            variant="contained"
+            autoFocus
+          >
+            Confirm
           </Button>
         </DialogActions>
       </Dialog>
