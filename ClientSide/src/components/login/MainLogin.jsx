@@ -96,24 +96,32 @@ const MainLogin = () => {
   };
   
   const navigate = useNavigate();
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    const role = localStorage.getItem('role');
+    if (role === 'Student') navigate('/student/dashboard');
+    else if (role === 'Faculty') navigate('/faculty/dashboard');
+    else if (role === 'Admin') navigate('/admin/dashboard');
+  }, [navigate]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
     setLoginError('');
-    
-    // Validate form
     if (!email || !password) {
       setLoginError('Please enter both email and password');
       setIsLoading(false);
       return;
     }
-    
-    // Simulate login process
     setTimeout(() => {
       setIsLoading(false);
-      // alert(`Login attempt as ${selectedRole} with email: ${email}`);
       localStorage.setItem("role", selectedRole);
-      navigate('/');
+      if (selectedRole === 'Student') navigate('/student/dashboard');
+      else if (selectedRole === 'Faculty') navigate('/faculty/dashboard');
+      else if (selectedRole === 'Admin') navigate('/admin/dashboard');
+      else if (selectedRole === 'HOD') navigate('/hod/dashboard');
+      else navigate('/');
     }, 1000);
   };
 
