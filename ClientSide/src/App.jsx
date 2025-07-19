@@ -20,6 +20,7 @@ import UploadMarks from './components/faculty/UploadMarks.jsx';
 import UploadAttendance from './components/faculty/UploadAttendance.jsx';
 import UploadMaterial from './components/faculty/UploadMaterial.jsx';
 import UploadAssignment from './components/faculty/UploadAssignment.jsx';
+import UploadTimetable from './components/faculty/UploadTimetable.jsx';
 import Attendance from './components/faculty/Attendance.jsx';
 import Timetable from './components/faculty/Timetable.jsx';
 import HODDashboard from './components/hod/HODDashboard.jsx';
@@ -70,6 +71,7 @@ function App() {
         <Route path="/faculty/upload-attendance" element={<UploadAttendance />} />
         <Route path="/faculty/upload-material" element={<UploadMaterial />} />
         <Route path="/faculty/upload-assignment" element={<UploadAssignment />} />
+        <Route path="/faculty/upload-timetable" element={<UploadTimetable />} />
         <Route path="/faculty/attendance" element={<Attendance />} />
         <Route path="/faculty/timetable" element={<Timetable />} />
       </Route>

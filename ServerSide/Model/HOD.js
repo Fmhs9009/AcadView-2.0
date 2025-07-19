@@ -25,8 +25,17 @@ const hodSchema = new mongoose.Schema({
     unique: true,
   },
   department: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Branch',
     required: true,
+  },
+  designation: {
+    type: String,
+    default: 'Head of Department',
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
     unique: true, // har dept. ka ek hi HOD hota hai
   },
   departmentFaculty: [

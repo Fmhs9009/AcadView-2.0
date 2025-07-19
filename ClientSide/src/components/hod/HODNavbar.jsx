@@ -22,6 +22,9 @@ function HODNavbar({ handleLogout }) {
           <NavLink to="/hod/notifications" className={({isActive})=>`${isActive ? "text-emerald-400" : "text-white"}`}>Notifications</NavLink>
         </li>
         <li>
+          <NavLink to="/hod/department-management" className={({isActive})=>`${isActive ? "text-emerald-400" : "text-white"}`}>Department Management</NavLink>
+        </li>
+        <li>
           <NavLink to="/hod/profile" className={({isActive})=>`${isActive ? "text-emerald-400" : "text-white"}`}>Profile</NavLink>
         </li>
         <li>

@@ -22,6 +22,9 @@ function FacultyNavbar({handleLogout}) {
           <NavLink to="/faculty/upload-assignment" className={({isActive})=>`${isActive ? "text-emerald-400" : "text-white"}`}>Upload Assignment</NavLink>
         </li>
         <li>
+          <NavLink to="/faculty/upload-timetable" className={({isActive})=>`${isActive ? "text-emerald-400" : "text-white"}`}>Upload Timetable</NavLink>
+        </li>
+        <li>
           <NavLink to="/faculty/attendance" className={({isActive})=>`${isActive ? "text-emerald-400" : "text-white"}`}>Attendance</NavLink>
         </li>
         <li>
@@ -40,4 +43,4 @@ function FacultyNavbar({handleLogout}) {
   )
 }
 
-export default FacultyNavbar 
+export default FacultyNavbar
