@@ -14,6 +14,7 @@ const assignmentRoutes = require("./Routes/assignmentRoutes");
 const timetableRoutes = require("./Routes/timetableRoutes");
 const classRoutes = require("./Routes/classRoutes");
 const studyMaterialRoutes = require("./Routes/studyMaterialRoutes");
+const batchRoutes = require("./Routes/batchRoutes");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.use("/api/assignments", assignmentRoutes);
 app.use("/api/timetables", timetableRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/study-materials", studyMaterialRoutes);
+app.use("/api/batches", batchRoutes);
 
 // Root route
 app.get("/", (req, res) => {
