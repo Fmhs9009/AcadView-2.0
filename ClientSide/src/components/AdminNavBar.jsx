@@ -7,7 +7,7 @@ function AdminNavbar({handleLogout}) {
       <h1 className="text-xl font-bold">College Portal</h1>
       <ul className="flex space-x-6">
         <li>
-          <NavLink to="/" className={({isActive})=>`${isActive ? "text-emerald-400" : "text-white"}`}>Dashboard</NavLink>
+          <NavLink to="/admin/dashboard" className={({isActive})=>`${isActive ? "text-emerald-400" : "text-white"}`}>Dashboard</NavLink>
         </li>
         <li>
           <NavLink to="/students" className={({isActive})=>`${isActive ? "text-emerald-400" : "text-white"}`}>Students</NavLink>

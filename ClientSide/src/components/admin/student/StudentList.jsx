@@ -29,7 +29,7 @@ import{
   Alert,
   Snackbar,
 } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, Refresh as RefreshIcon } from '@mui/icons-material';
+import { Add as AddIcon, Delete as DeleteIcon, Refresh as RefreshIcon, RemoveRedEyeOutlined as ViewIcon, Edit as EditIcon } from '@mui/icons-material';
 
 function StudentList() {
   const [branches, setBranches] = useState([]);
@@ -244,9 +244,9 @@ function StudentList() {
                   <td className="px-6 py-3 text-gray-600">{student.branch.name}</td>
                   <td className="px-6 py-3 text-gray-600">{student.batch}</td>
                   <td className="px-6 py-3 space-x-2">
-                    <button onClick={() => navigate(`/students/view/${student.id}`)} className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">View</button>
-                    <button onClick={() => navigate(`/students/edit/${student.id}`)} className="px-3 py-1 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600">Edit</button>
-                    <button onClick={()=> handleDelete(student._id)} className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
+                    <button onClick={() => navigate(`/students/view/${student._id}`)} className="px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"><ViewIcon/></button>
+                    <button onClick={() => navigate(`/students/edit/${student._id}`)} className="px-2 py-1 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600 cursor-pointer"><EditIcon/></button>
+                    <button onClick={()=> handleDelete(student._id)} className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 cursor-pointer"><DeleteIcon/></button>
                   </td>
                 </tr>
               ))
