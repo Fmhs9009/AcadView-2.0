@@ -8,6 +8,8 @@ const {
   getDepartmentStudents,
   addFaculty,
   addStudent,
+  updateFaculty,
+  updateStudent,
   removeFaculty,
   removeStudent,
   getDepartmentStats
@@ -21,11 +23,13 @@ const {
 // Faculty management routes
 router.get('/faculty', getDepartmentFaculty);
 router.post('/faculty', addFaculty);
+router.put('/faculty/:id', updateFaculty);
 router.delete('/faculty/:id', removeFaculty);
 
 // Student management routes
 router.get('/students', getDepartmentStudents);
 router.post('/student', addStudent);
+router.put('/student/:id', updateStudent);
 router.delete('/student/:id', removeStudent);
 
 // Department statistics
