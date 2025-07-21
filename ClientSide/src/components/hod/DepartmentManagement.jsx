@@ -711,255 +711,436 @@ const DepartmentManagement = () => {
       </Grid>
 
       {/* Add/Edit Faculty Dialog */}
-      <Dialog open={openDialog === 'faculty'} onClose={() => setOpenDialog('')} maxWidth="md" fullWidth>
-        <DialogTitle>{editMode ? 'Edit Faculty' : 'Add New Faculty'}</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} sm={6}>
+      <Dialog 
+        open={openDialog === 'faculty'} 
+        onClose={() => setOpenDialog('')} 
+        maxWidth="lg" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
+          }
+        }}
+      >
+        <DialogTitle 
+          sx={{ 
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            textAlign: 'center',
+            fontSize: '1.5rem',
+            fontWeight: 600,
+            py: 3
+          }}
+        >
+          <PersonIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+          {editMode ? 'Edit Faculty Member' : 'Add New Faculty Member'}
+        </DialogTitle>
+        <DialogContent sx={{ p: 4, backgroundColor: '#fafafa' }}>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" color="primary" gutterBottom>
+              Personal Information
+            </Typography>
+            <Divider sx={{ mb: 3 }} />
+          </Box>
+          
+          <Grid container spacing={3}>
+            {/* Row 1: Name and Email */}
+            <Grid item xs={12} md={6}>
               <TextField
                 required
                 fullWidth
-                label="Name"
+                label="Full Name"
+                placeholder="Enter full name"
                 value={newFaculty.name}
                 onChange={(e) => setNewFaculty({ ...newFaculty, name: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#667eea',
+                    },
+                  },
+                }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} md={6}>
               <TextField
                 required
                 fullWidth
-                label="Email"
+                label="Email Address"
                 type="email"
+                placeholder="Enter email address"
                 value={newFaculty.email}
                 onChange={(e) => setNewFaculty({ ...newFaculty, email: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#667eea',
+                    },
+                  },
+                }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            
+            {/* Row 2: Phone and Gender */}
+            <Grid item xs={12} md={6}>
               <TextField
                 required
                 fullWidth
                 label="Phone Number"
+                placeholder="Enter phone number"
                 value={newFaculty.phoneNo}
                 onChange={(e) => setNewFaculty({ ...newFaculty, phoneNo: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#667eea',
+                    },
+                  },
+                }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required>
+            <Grid item xs={12} md={6}>
+              <FormControl 
+                fullWidth 
+                required
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#667eea',
+                    },
+                  },
+                }}
+              >
                 <InputLabel>Gender</InputLabel>
                 <Select
                   value={newFaculty.gender}
                   label="Gender"
                   onChange={(e) => setNewFaculty({ ...newFaculty, gender: e.target.value })}
                 >
-                  <MenuItem value="Male">Male</MenuItem>
-                  <MenuItem value="Female">Female</MenuItem>
-                  <MenuItem value="Other">Other</MenuItem>
+                  <MenuItem value="Male">👨 Male</MenuItem>
+                  <MenuItem value="Female">👩 Female</MenuItem>
+                  <MenuItem value="Other">⚧ Other</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6}>
+          </Grid>
+          
+          <Box sx={{ mt: 4, mb: 3 }}>
+            <Typography variant="h6" color="primary" gutterBottom>
+              Professional Information
+            </Typography>
+            <Divider sx={{ mb: 3 }} />
+          </Box>
+          
+          <Grid container spacing={3}>
+            {/* Row 3: Employee ID and Department */}
+            <Grid item xs={12} md={6}>
               <TextField
                 required
                 fullWidth
                 label="Employee ID"
+                placeholder="Enter employee ID"
                 value={newFaculty.empId}
                 onChange={(e) => setNewFaculty({ ...newFaculty, empId: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#667eea',
+                    },
+                  },
+                }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} md={6}>
               <TextField
                 required
                 fullWidth
                 label="Department"
+                placeholder="Enter department"
                 value={newFaculty.department}
                 onChange={(e) => setNewFaculty({ ...newFaculty, department: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#667eea',
+                    },
+                  },
+                }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            
+            {/* Row 4: Designation and Qualification */}
+            <Grid item xs={12} md={6}>
               <TextField
                 required
                 fullWidth
                 label="Designation"
+                placeholder="e.g., Assistant Professor"
                 value={newFaculty.designation}
                 onChange={(e) => setNewFaculty({ ...newFaculty, designation: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#667eea',
+                    },
+                  },
+                }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} md={6}>
               <TextField
                 required
                 fullWidth
                 label="Qualification"
+                placeholder="e.g., M.Tech, Ph.D"
                 value={newFaculty.qualification}
                 onChange={(e) => setNewFaculty({ ...newFaculty, qualification: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#667eea',
+                    },
+                  },
+                }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            
+            {/* Row 5: Experience */}
+            <Grid item xs={12} md={6}>
               <TextField
                 required
                 fullWidth
                 label="Experience (Years)"
                 type="number"
+                placeholder="Enter years of experience"
                 value={newFaculty.experience}
                 onChange={(e) => setNewFaculty({ ...newFaculty, experience: e.target.value })}
+                variant="outlined"
+                inputProps={{ min: 0, max: 50 }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#667eea',
+                    },
+                  },
+                }}
               />
             </Grid>
+            
+            {/* Row 6: Address */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Address"
+                placeholder="Enter complete address"
                 multiline
-                rows={2}
+                rows={3}
                 value={newFaculty.address}
                 onChange={(e) => setNewFaculty({ ...newFaculty, address: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#667eea',
+                    },
+                  },
+                }}
               />
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog('')}>Cancel</Button>
-          <Button onClick={handleAddFaculty} variant="contained" color="primary">
-            {editMode ? 'Update Faculty' : 'Add Faculty'}
+        <DialogActions sx={{ p: 3, backgroundColor: '#f5f5f5', justifyContent: 'space-between' }}>
+          <Button 
+            onClick={() => setOpenDialog('')}
+            variant="outlined"
+            size="large"
+            sx={{ 
+              borderRadius: 2,
+              px: 4,
+              borderColor: '#ccc',
+              color: '#666',
+              '&:hover': {
+                borderColor: '#999',
+                backgroundColor: '#f9f9f9'
+              }
+            }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleAddFaculty} 
+            variant="contained" 
+            size="large"
+            sx={{
+              borderRadius: 2,
+              px: 4,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+              }
+            }}
+          >
+            {editMode ? '✏️ Update Faculty' : '➕ Add Faculty'}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Add/Edit Student Dialog */}
-      <Dialog open={openDialog === 'student'} onClose={() => setOpenDialog('')} maxWidth="md" fullWidth>
-        <DialogTitle>{editMode ? 'Edit Student' : 'Add New Student'}</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} sm={6}>
+      <Dialog 
+        open={openDialog === 'student'} 
+        onClose={() => setOpenDialog('')} 
+        maxWidth="lg" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
+          }
+        }}
+      >
+        <DialogTitle 
+          sx={{ 
+            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+            color: 'white',
+            textAlign: 'center',
+            fontSize: '1.5rem',
+            fontWeight: 600,
+            py: 3
+          }}
+        >
+          <SchoolIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+          {editMode ? 'Edit Student Information' : 'Add New Student'}
+        </DialogTitle>
+        <DialogContent sx={{ p: 4, backgroundColor: '#fafafa' }}>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" color="primary" gutterBottom>
+              Personal Information
+            </Typography>
+            <Divider sx={{ mb: 3 }} />
+          </Box>
+          
+          <Grid container spacing={3}>
+            {/* Row 1: Name and Email */}
+            <Grid item xs={12} md={6}>
               <TextField
                 required
                 fullWidth
-                label="Name"
+                label="Full Name"
+                placeholder="Enter student's full name"
                 value={newStudent.name}
                 onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#4facfe',
+                    },
+                  },
+                }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} md={6}>
               <TextField
                 required
                 fullWidth
-                label="Email"
+                label="Email Address"
                 type="email"
+                placeholder="Enter email address"
                 value={newStudent.email}
                 onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#4facfe',
+                    },
+                  },
+                }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            
+            {/* Row 2: Phone and Gender */}
+            <Grid item xs={12} md={6}>
               <TextField
                 required
                 fullWidth
                 label="Phone Number"
+                placeholder="Enter phone number"
                 value={newStudent.phoneNo}
                 onChange={(e) => setNewStudent({ ...newStudent, phoneNo: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#4facfe',
+                    },
+                  },
+                }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required>
+            <Grid item xs={12} md={6}>
+              <FormControl 
+                fullWidth 
+                required
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#4facfe',
+                    },
+                  },
+                }}
+              >
                 <InputLabel>Gender</InputLabel>
                 <Select
                   value={newStudent.gender}
                   label="Gender"
                   onChange={(e) => setNewStudent({ ...newStudent, gender: e.target.value })}
                 >
-                  <MenuItem value="Male">Male</MenuItem>
-                  <MenuItem value="Female">Female</MenuItem>
-                  <MenuItem value="Other">Other</MenuItem>
+                  <MenuItem value="Male">👨 Male</MenuItem>
+                  <MenuItem value="Female">👩 Female</MenuItem>
+                  <MenuItem value="Other">⚧ Other</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                label="Enrollment Number"
-                value={newStudent.enrollmentNo}
-                onChange={(e) => setNewStudent({ ...newStudent, enrollmentNo: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required>
-                <InputLabel>Section</InputLabel>
-                <Select
-                  value={newStudent.section}
-                  label="Section"
-                  onChange={(e) => setNewStudent({ ...newStudent, section: e.target.value })}
-                >
-                  <MenuItem value="A">A</MenuItem>
-                  <MenuItem value="B">B</MenuItem>
-                  <MenuItem value="C">C</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <TextField
-                    required
-                    fullWidth
-                    label="Batch From"
-                    type="number"
-                    value={newStudent.batch.from}
-                    onChange={(e) => setNewStudent({
-                      ...newStudent,
-                      batch: { ...newStudent.batch, from: e.target.value }
-                    })}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <TextField
-                    required
-                    fullWidth
-                    label="Batch To"
-                    type="number"
-                    value={newStudent.batch.to}
-                    onChange={(e) => setNewStudent({
-                      ...newStudent,
-                      batch: { ...newStudent.batch, to: e.target.value }
-                    })}
-                  />
-                </Grid>
-              </Grid>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                label="Department"
-                value={newStudent.department}
-                onChange={(e) => setNewStudent({ ...newStudent, department: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                label="Branch"
-                value={newStudent.branch}
-                onChange={(e) => setNewStudent({ ...newStudent, branch: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                label="Father's Name"
-                value={newStudent.fatherName}
-                onChange={(e) => setNewStudent({ ...newStudent, fatherName: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                label="Mother's Name"
-                value={newStudent.motherName}
-                onChange={(e) => setNewStudent({ ...newStudent, motherName: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
+            
+            {/* Row 3: Date of Birth and Enrollment Number */}
+            <Grid item xs={12} md={6}>
               <TextField
                 required
                 fullWidth
@@ -968,24 +1149,276 @@ const DepartmentManagement = () => {
                 value={newStudent.dob}
                 onChange={(e) => setNewStudent({ ...newStudent, dob: e.target.value })}
                 InputLabelProps={{ shrink: true }}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#4facfe',
+                    },
+                  },
+                }}
               />
             </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                required
+                fullWidth
+                label="Enrollment Number"
+                placeholder="Enter enrollment number"
+                value={newStudent.enrollmentNo}
+                onChange={(e) => setNewStudent({ ...newStudent, enrollmentNo: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#4facfe',
+                    },
+                  },
+                }}
+              />
+            </Grid>
+          </Grid>
+          
+          <Box sx={{ mt: 4, mb: 3 }}>
+            <Typography variant="h6" color="primary" gutterBottom>
+              Academic Information
+            </Typography>
+            <Divider sx={{ mb: 3 }} />
+          </Box>
+          
+          <Grid container spacing={3}>
+            {/* Row 4: Department and Branch */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                required
+                fullWidth
+                label="Department"
+                placeholder="Enter department"
+                value={newStudent.department}
+                onChange={(e) => setNewStudent({ ...newStudent, department: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#4facfe',
+                    },
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                required
+                fullWidth
+                label="Branch"
+                placeholder="Enter branch"
+                value={newStudent.branch}
+                onChange={(e) => setNewStudent({ ...newStudent, branch: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#4facfe',
+                    },
+                  },
+                }}
+              />
+            </Grid>
+            
+            {/* Row 5: Section and Batch */}
+            <Grid item xs={12} md={6}>
+              <FormControl 
+                fullWidth 
+                required
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#4facfe',
+                    },
+                  },
+                }}
+              >
+                <InputLabel>Section</InputLabel>
+                <Select
+                  value={newStudent.section}
+                  label="Section"
+                  onChange={(e) => setNewStudent({ ...newStudent, section: e.target.value })}
+                >
+                  <MenuItem value="A">📚 Section A</MenuItem>
+                  <MenuItem value="B">📚 Section B</MenuItem>
+                  <MenuItem value="C">📚 Section C</MenuItem>
+                  <MenuItem value="D">📚 Section D</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Batch From"
+                  type="number"
+                  placeholder="2020"
+                  value={newStudent.batch.from}
+                  onChange={(e) => setNewStudent({
+                    ...newStudent,
+                    batch: { ...newStudent.batch, from: e.target.value }
+                  })}
+                  variant="outlined"
+                  inputProps={{ min: 2000, max: 2030 }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      backgroundColor: 'white',
+                      '&:hover fieldset': {
+                        borderColor: '#4facfe',
+                      },
+                    },
+                  }}
+                />
+                <TextField
+                  required
+                  fullWidth
+                  label="Batch To"
+                  type="number"
+                  placeholder="2024"
+                  value={newStudent.batch.to}
+                  onChange={(e) => setNewStudent({
+                    ...newStudent,
+                    batch: { ...newStudent.batch, to: e.target.value }
+                  })}
+                  variant="outlined"
+                  inputProps={{ min: 2000, max: 2030 }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      backgroundColor: 'white',
+                      '&:hover fieldset': {
+                        borderColor: '#4facfe',
+                      },
+                    },
+                  }}
+                />
+              </Box>
+            </Grid>
+          </Grid>
+          
+          <Box sx={{ mt: 4, mb: 3 }}>
+            <Typography variant="h6" color="primary" gutterBottom>
+              Family Information
+            </Typography>
+            <Divider sx={{ mb: 3 }} />
+          </Box>
+          
+          <Grid container spacing={3}>
+            {/* Row 6: Father's and Mother's Name */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                required
+                fullWidth
+                label="Father's Name"
+                placeholder="Enter father's name"
+                value={newStudent.fatherName}
+                onChange={(e) => setNewStudent({ ...newStudent, fatherName: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#4facfe',
+                    },
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                required
+                fullWidth
+                label="Mother's Name"
+                placeholder="Enter mother's name"
+                value={newStudent.motherName}
+                onChange={(e) => setNewStudent({ ...newStudent, motherName: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#4facfe',
+                    },
+                  },
+                }}
+              />
+            </Grid>
+            
+            {/* Row 7: Address */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Address"
+                placeholder="Enter complete address"
                 multiline
-                rows={2}
+                rows={3}
                 value={newStudent.address}
                 onChange={(e) => setNewStudent({ ...newStudent, address: e.target.value })}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                    '&:hover fieldset': {
+                      borderColor: '#4facfe',
+                    },
+                  },
+                }}
               />
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog('')}>Cancel</Button>
-          <Button onClick={handleAddStudent} variant="contained" color="primary">
-            {editMode ? 'Update Student' : 'Add Student'}
+        <DialogActions sx={{ p: 3, backgroundColor: '#f5f5f5', justifyContent: 'space-between' }}>
+          <Button 
+            onClick={() => setOpenDialog('')}
+            variant="outlined"
+            size="large"
+            sx={{ 
+              borderRadius: 2,
+              px: 4,
+              borderColor: '#ccc',
+              color: '#666',
+              '&:hover': {
+                borderColor: '#999',
+                backgroundColor: '#f9f9f9'
+              }
+            }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleAddStudent} 
+            variant="contained" 
+            size="large"
+            sx={{
+              borderRadius: 2,
+              px: 4,
+              background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #3d8bfe 0%, #00d4fe 100%)',
+              }
+            }}
+          >
+            {editMode ? '✏️ Update Student' : '➕ Add Student'}
           </Button>
         </DialogActions>
       </Dialog>
