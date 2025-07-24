@@ -2,6 +2,7 @@ const Faculty = require('../Model/Faculty');
 const Student = require('../Model/Student');
 const HOD = require('../Model/HOD');
 const Branch = require('../Model/Branch');
+const bcrypt = require('bcryptjs');
 
 // Middleware to check if HOD has access to the department
 const checkDepartmentAccess = async (req, res, next) => {
@@ -76,7 +77,7 @@ const addStudent = async (req, res) => {
   try {
     const { 
       name, email, phoneNo, gender, enrollmentNo, section, batch, 
-      department, branch, fatherName, motherName, dob, address 
+      department, branch, fatherName, motherName, dob, address, password 
     } = req.body;
 
     // Find the branch document by name
@@ -85,6 +86,7 @@ const addStudent = async (req, res) => {
       return res.status(400).json({ message: 'Invalid branch specified' });
     }
 
+    const hashPassword = await bcrypt.hash(password, 10);
     const newStudent = new Student({
       name,
       email,
@@ -98,7 +100,8 @@ const addStudent = async (req, res) => {
       fatherName,
       motherName,
       dob,
-      address
+      address,
+      password: hashPassword
     });
 
     await newStudent.save();

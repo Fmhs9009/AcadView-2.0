@@ -2,6 +2,7 @@ const express = require("express");
 // const path = require("path");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const authRoutes = require('./Routes/auth/authRoutes')
 const studentRoutes = require("./Routes/studentRoutes");
 const branchRoutes = require("./Routes/branchRoutes");
 const semesterRoutes = require("./Routes/semesterRoutes");
@@ -25,6 +26,9 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// Auth Routes
+app.use("/auth", authRoutes);
 
 // API Routes
 app.use("/api/students", studentRoutes);
