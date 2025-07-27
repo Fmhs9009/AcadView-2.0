@@ -10,6 +10,10 @@ const hodSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  password: {
+    type: String,
+    required: true,
+  },
   phoneNo: {
     type: String,
     required: true,

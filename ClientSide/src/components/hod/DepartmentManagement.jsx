@@ -357,6 +357,9 @@ const DepartmentManagement = () => {
         showSnackbar('Student updated successfully');
       } else {
         // Add new student
+      // Add password to student data
+        studentData.password = studentData.dob;
+        console.log(studentData.dob)
         await axios.post('/api/hod-management/student', studentData);
         showSnackbar('Student added successfully');
       }

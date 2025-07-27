@@ -26,6 +26,7 @@ import Timetable from './components/faculty/Timetable.jsx';
 import HODDashboard from './components/hod/HODDashboard.jsx';
 import HODNavbar from './components/hod/HODNavbar.jsx';
 import HODPanel from './components/hod/HODPanel.jsx';
+import Cookies from 'js-cookie';
 
 function RequireAuth({ allowedRoles, children }) {
   const role = localStorage.getItem('role');
@@ -47,6 +48,7 @@ function App() {
   const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem('role');
+    Cookies.remove('auth_token');
     navigate('/');
   };
 

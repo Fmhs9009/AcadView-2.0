@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './login.css';
+import axios from '../../config/axios';
 
 // Icons for each role
 const roleIcons = {
@@ -115,13 +116,28 @@ const MainLogin = () => {
       return;
     }
     setTimeout(() => {
+      axios.post(
+        '/auth/login', {
+          email,
+          password,
+          role: selectedRole
+        }
+      )
+      .then((res) => {
+        console.log(res)
+        // setIsLoading(false);
+        localStorage.setItem("role", selectedRole);
+        if (selectedRole === 'Student') navigate('/student/dashboard');
+        else if (selectedRole === 'Faculty') navigate('/faculty/dashboard');
+        else if (selectedRole === 'Admin') navigate('/admin/dashboard');
+        else if (selectedRole === 'HOD') navigate('/hod/dashboard');
+        else navigate('/');
+      })
+      .catch((err) => {
+        // TODO: will need to toast error message
+        console.log(err.response.data.message);
+      })
       setIsLoading(false);
-      localStorage.setItem("role", selectedRole);
-      if (selectedRole === 'Student') navigate('/student/dashboard');
-      else if (selectedRole === 'Faculty') navigate('/faculty/dashboard');
-      else if (selectedRole === 'Admin') navigate('/admin/dashboard');
-      else if (selectedRole === 'HOD') navigate('/hod/dashboard');
-      else navigate('/');
     }, 1000);
   };
 
