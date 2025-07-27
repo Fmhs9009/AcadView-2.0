@@ -48,14 +48,12 @@ import {
   Refresh as RefreshIcon,
   Notifications as NotificationsIcon,
   School as SchoolIcon,
-  Person as PersonIcon,
-  Group as GroupIcon,
   CalendarToday as CalendarIcon,
   PriorityHigh as PriorityIcon,
   Close as CloseIcon
 } from '@mui/icons-material';
 
-const HODNotifications = () => {
+const FacultyNotifications = () => {
   // State management
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -66,7 +64,6 @@ const HODNotifications = () => {
   
   // Filter states
   const [filters, setFilters] = useState({
-    audience: '',
     priority: '',
     dateFrom: '',
     dateTo: ''
@@ -77,11 +74,11 @@ const HODNotifications = () => {
   const [selectedNotice, setSelectedNotice] = useState(null);
   const [editMode, setEditMode] = useState(false);
   
-  // Form state for creating/editing notices
+  // Form state for creating/editing notices (Faculty can only send to students)
   const [noticeForm, setNoticeForm] = useState({
     title: '',
     message: '',
-    audience: 'students',
+    audience: 'students', // Fixed for faculty
     priority: 'medium',
     expirationDate: ''
   });
@@ -92,6 +89,7 @@ const HODNotifications = () => {
     message: '',
     severity: 'success'
   });
+
   // Utility functions
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
@@ -113,7 +111,7 @@ const HODNotifications = () => {
         ...filters
       };
       
-      const response = await axios.get('/api/notices/hod', { params });
+      const response = await axios.get('/api/notices/faculty', { params });
       setNotices(response.data.notices || []);
       setTotalPages(response.data.totalPages || 1);
     } catch (error) {
@@ -136,7 +134,7 @@ const HODNotifications = () => {
   const createNotice = async () => {
     try {
       await axios.post('/api/notices', noticeForm);
-      showSnackbar('Notice created successfully!');
+      showSnackbar('Notice sent to students successfully!');
       setOpenDialog('');
       resetForm();
       fetchNotices();
@@ -176,7 +174,7 @@ const HODNotifications = () => {
     setNoticeForm({
       title: '',
       message: '',
-      audience: 'students',
+      audience: 'students', // Always students for faculty
       priority: 'medium',
       expirationDate: ''
     });
@@ -194,7 +192,7 @@ const HODNotifications = () => {
     setNoticeForm({
       title: notice.title,
       message: notice.message,
-      audience: notice.audience,
+      audience: 'students', // Always students for faculty
       priority: notice.priority,
       expirationDate: notice.expirationDate ? new Date(notice.expirationDate).toISOString().split('T')[0] : ''
     });
@@ -222,24 +220,6 @@ const HODNotifications = () => {
   }, [activeTab, currentPage, filters]);
 
   // Helper functions
-  const getAudienceIcon = (audience) => {
-    switch (audience) {
-      case 'students': return <SchoolIcon />;
-      case 'faculty': return <PersonIcon />;
-      case 'both': return <GroupIcon />;
-      default: return <NotificationsIcon />;
-    }
-  };
-
-  const getAudienceColor = (audience) => {
-    switch (audience) {
-      case 'students': return 'primary';
-      case 'faculty': return 'secondary';
-      case 'both': return 'success';
-      default: return 'default';
-    }
-  };
-
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'high': return 'error';
@@ -274,7 +254,7 @@ const HODNotifications = () => {
           gap: 2
         }}>
           <NotificationsIcon sx={{ fontSize: 40, color: '#1976d2' }} />
-          HOD Notifications
+          Faculty Notifications
         </Typography>
         
         {/* Stats Cards */}
@@ -285,7 +265,7 @@ const HODNotifications = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box>
                     <Typography variant="h4" component="div">{stats.sent}</Typography>
-                    <Typography variant="body2">Sent Notices</Typography>
+                    <Typography variant="body2">Sent to Students</Typography>
                   </Box>
                   <SendIcon sx={{ fontSize: 40, opacity: 0.8 }} />
                 </Box>
@@ -333,7 +313,7 @@ const HODNotifications = () => {
               }}
               fullWidth
             >
-              Create New Notice
+              Send Notice to Students
             </Button>
           </Grid>
         </Grid>
@@ -364,22 +344,7 @@ const HODNotifications = () => {
           
           {/* Filters */}
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Audience</InputLabel>
-                <Select
-                  value={filters.audience}
-                  label="Audience"
-                  onChange={(e) => setFilters({...filters, audience: e.target.value})}
-                >
-                  <MenuItem value="">All</MenuItem>
-                  <MenuItem value="students">Students</MenuItem>
-                  <MenuItem value="faculty">Faculty</MenuItem>
-                  <MenuItem value="both">Both</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={4}>
               <FormControl fullWidth size="small">
                 <InputLabel>Priority</InputLabel>
                 <Select
@@ -394,7 +359,7 @@ const HODNotifications = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
                 size="small"
@@ -405,7 +370,7 @@ const HODNotifications = () => {
                 onChange={(e) => setFilters({...filters, dateFrom: e.target.value})}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
                 size="small"
@@ -429,12 +394,12 @@ const HODNotifications = () => {
             </Box>
           ) : notices.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
-              <NotificationsIcon sx={{ fontSize: 64, color: 'grey.400', mb: 2 }} />
+              <SchoolIcon sx={{ fontSize: 64, color: 'grey.400', mb: 2 }} />
               <Typography variant="h6" color="text.secondary">
                 No notices found
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Create your first notice to get started
+                Send your first notice to students to get started
               </Typography>
             </Box>
           ) : (
@@ -464,9 +429,9 @@ const HODNotifications = () => {
                         </TableCell>
                         <TableCell>
                           <Chip
-                            icon={getAudienceIcon(notice.audience)}
-                            label={notice.audience.charAt(0).toUpperCase() + notice.audience.slice(1)}
-                            color={getAudienceColor(notice.audience)}
+                            icon={<SchoolIcon />}
+                            label="Students"
+                            color="primary"
                             size="small"
                           />
                         </TableCell>
@@ -501,24 +466,29 @@ const HODNotifications = () => {
                                 <ViewIcon />
                               </IconButton>
                             </Tooltip>
-                            <Tooltip title="Edit">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleOpenEditDialog(notice)}
-                                sx={{ color: 'warning.main' }}
-                              >
-                                <EditIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Delete">
-                              <IconButton
-                                size="small"
-                                onClick={() => deleteNotice(notice._id)}
-                                sx={{ color: 'error.main' }}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </Tooltip>
+                            {/* Only show edit/delete for sent notices */}
+                            {notice.sender && (
+                              <>
+                                <Tooltip title="Edit">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleOpenEditDialog(notice)}
+                                    sx={{ color: 'warning.main' }}
+                                  >
+                                    <EditIcon />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => deleteNotice(notice._id)}
+                                    sx={{ color: 'error.main' }}
+                                  >
+                                    <DeleteIcon />
+                                  </IconButton>
+                                </Tooltip>
+                              </>
+                            )}
                           </Stack>
                         </TableCell>
                       </TableRow>
@@ -555,8 +525,8 @@ const HODNotifications = () => {
           alignItems: 'center',
           gap: 1
         }}>
-          <NotificationsIcon />
-          {editMode ? 'Edit Notice' : 'Create New Notice'}
+          <SchoolIcon />
+          {editMode ? 'Edit Notice to Students' : 'Send Notice to Students'}
         </DialogTitle>
         <DialogContent sx={{ mt: 2 }}>
           <Grid container spacing={2}>
@@ -583,18 +553,18 @@ const HODNotifications = () => {
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled>
                 <InputLabel>Audience</InputLabel>
                 <Select
-                  value={noticeForm.audience}
+                  value="students"
                   label="Audience"
-                  onChange={(e) => setNoticeForm({...noticeForm, audience: e.target.value})}
                 >
-                  <MenuItem value="students">👨‍🎓 Students</MenuItem>
-                  <MenuItem value="faculty">👨‍🏫 Faculty</MenuItem>
-                  <MenuItem value="both">👥 Both</MenuItem>
+                  <MenuItem value="students">👨‍🎓 Students Only</MenuItem>
                 </Select>
               </FormControl>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                Faculty can only send notices to students
+              </Typography>
             </Grid>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
@@ -637,7 +607,7 @@ const HODNotifications = () => {
               }
             }}
           >
-            {editMode ? 'Update Notice' : 'Send Notice'}
+            {editMode ? 'Update Notice' : 'Send to Students'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -676,9 +646,9 @@ const HODNotifications = () => {
                 <Grid item xs={12} sm={6}>
                   <Typography variant="body2" color="text.secondary">Audience:</Typography>
                   <Chip
-                    icon={getAudienceIcon(selectedNotice.audience)}
-                    label={selectedNotice.audience.charAt(0).toUpperCase() + selectedNotice.audience.slice(1)}
-                    color={getAudienceColor(selectedNotice.audience)}
+                    icon={<SchoolIcon />}
+                    label="Students"
+                    color="primary"
                     sx={{ mt: 0.5 }}
                   />
                 </Grid>
@@ -730,7 +700,6 @@ const HODNotifications = () => {
       </Snackbar>
     </Container>
   );
-
 };
 
-export default HODNotifications;
+export default FacultyNotifications;

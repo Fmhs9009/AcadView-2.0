@@ -1,43 +1,22 @@
 const express = require('express');
 const router = express.Router();
+
+// Import controllers
 const {
-  upload,
-  createTimetable,
-  getAllTimetables,
-  getTimetablesByClass,
-  getCurrentTimetable,
-  getTimetablesByFaculty,
-  getTimetableById,
-  updateTimetable,
-  deleteTimetable,
-  downloadTimetable
+  getAllTimetableEntries,
+  getTimetableByClass,
+  getTimetableByFaculty,
+  createTimetableEntry,
+  updateTimetableEntry,
+  deleteTimetableEntry
 } = require('../Controller/timetableController');
 
-// Create timetable with file upload
-router.post('/', upload.single('file'), createTimetable);
-
-// Get all timetables with filtering
-router.get('/', getAllTimetables);
-
-// Get timetables by class
-router.get('/class/:classId', getTimetablesByClass);
-
-// Get current active timetable for a class
-router.get('/class/:classId/current', getCurrentTimetable);
-
-// Get timetables by faculty
-router.get('/faculty/:facultyId', getTimetablesByFaculty);
-
-// Get timetable by ID
-router.get('/:id', getTimetableById);
-
-// Update timetable
-router.put('/:id', updateTimetable);
-
-// Delete timetable
-router.delete('/:id', deleteTimetable);
-
-// Download timetable file
-router.get('/:id/download', downloadTimetable);
+// Define routes
+router.get('/', getAllTimetableEntries);
+router.get('/class/:classId', getTimetableByClass);
+router.get('/faculty/:facultyId', getTimetableByFaculty);
+router.post('/', createTimetableEntry);
+router.put('/:id', updateTimetableEntry);
+router.delete('/:id', deleteTimetableEntry);
 
 module.exports = router;

@@ -7,7 +7,6 @@ import {
   Grid,
   Card,
   CardContent,
-  Button,
   TextField,
   Select,
   MenuItem,
@@ -17,7 +16,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   Chip,
   Tabs,
   Tab,
@@ -39,10 +37,6 @@ import {
   Pagination
 } from '@mui/material';
 import {
-  Add as AddIcon,
-  Send as SendIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
   Visibility as ViewIcon,
   FilterList as FilterIcon,
   Refresh as RefreshIcon,
@@ -51,23 +45,25 @@ import {
   Person as PersonIcon,
   Group as GroupIcon,
   CalendarToday as CalendarIcon,
-  PriorityHigh as PriorityIcon,
-  Close as CloseIcon
+  Priority as PriorityIcon,
+  Close as CloseIcon,
+  MarkEmailRead as MarkReadIcon,
+  Announcement as AnnouncementIcon
 } from '@mui/icons-material';
 
-const HODNotifications = () => {
+const StudentNotifications = () => {
   // State management
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState(0); // 0: All, 1: Sent, 2: Received
+  const [activeTab, setActiveTab] = useState(0); // 0: All, 1: Unread, 2: Read
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [stats, setStats] = useState({ sent: 0, received: 0 });
+  const [stats, setStats] = useState({ total: 0, unread: 0, read: 0 });
   
   // Filter states
   const [filters, setFilters] = useState({
-    audience: '',
     priority: '',
+    sender: '', // faculty or hod
     dateFrom: '',
     dateTo: ''
   });
@@ -75,16 +71,6 @@ const HODNotifications = () => {
   // Dialog states
   const [openDialog, setOpenDialog] = useState('');
   const [selectedNotice, setSelectedNotice] = useState(null);
-  const [editMode, setEditMode] = useState(false);
-  
-  // Form state for creating/editing notices
-  const [noticeForm, setNoticeForm] = useState({
-    title: '',
-    message: '',
-    audience: 'students',
-    priority: 'medium',
-    expirationDate: ''
-  });
   
   // Snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -92,6 +78,7 @@ const HODNotifications = () => {
     message: '',
     severity: 'success'
   });
+
   // Utility functions
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
@@ -105,15 +92,15 @@ const HODNotifications = () => {
   const fetchNotices = async () => {
     setLoading(true);
     try {
-      const type = activeTab === 1 ? 'sent' : activeTab === 2 ? 'received' : 'all';
+      const status = activeTab === 1 ? 'unread' : activeTab === 2 ? 'read' : 'all';
       const params = {
-        type,
+        status,
         page: currentPage,
         limit: 10,
         ...filters
       };
       
-      const response = await axios.get('/api/notices/hod', { params });
+      const response = await axios.get('/api/notices/student', { params });
       setNotices(response.data.notices || []);
       setTotalPages(response.data.totalPages || 1);
     } catch (error) {
@@ -126,92 +113,31 @@ const HODNotifications = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await axios.get('/api/notices/stats');
+      const response = await axios.get('/api/notices/student/stats');
       setStats(response.data);
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
   };
 
-  const createNotice = async () => {
+  const markAsRead = async (noticeId) => {
     try {
-      await axios.post('/api/notices', noticeForm);
-      showSnackbar('Notice created successfully!');
-      setOpenDialog('');
-      resetForm();
+      await axios.put(`/api/notices/${noticeId}/read`);
       fetchNotices();
       fetchStats();
     } catch (error) {
-      showSnackbar(error.response?.data?.message || 'Error creating notice', 'error');
+      showSnackbar(error.response?.data?.message || 'Error marking notice as read', 'error');
     }
   };
 
-  const updateNotice = async () => {
-    try {
-      await axios.put(`/api/notices/${selectedNotice._id}`, noticeForm);
-      showSnackbar('Notice updated successfully!');
-      setOpenDialog('');
-      resetForm();
-      fetchNotices();
-    } catch (error) {
-      showSnackbar(error.response?.data?.message || 'Error updating notice', 'error');
-    }
-  };
-
-  const deleteNotice = async (noticeId) => {
-    if (window.confirm('Are you sure you want to delete this notice?')) {
-      try {
-        await axios.delete(`/api/notices/${noticeId}`);
-        showSnackbar('Notice deleted successfully!');
-        fetchNotices();
-        fetchStats();
-      } catch (error) {
-        showSnackbar(error.response?.data?.message || 'Error deleting notice', 'error');
-      }
-    }
-  };
-
-  // Form handlers
-  const resetForm = () => {
-    setNoticeForm({
-      title: '',
-      message: '',
-      audience: 'students',
-      priority: 'medium',
-      expirationDate: ''
-    });
-    setEditMode(false);
-    setSelectedNotice(null);
-  };
-
-  const handleOpenCreateDialog = () => {
-    resetForm();
-    setOpenDialog('create');
-  };
-
-  const handleOpenEditDialog = (notice) => {
-    setSelectedNotice(notice);
-    setNoticeForm({
-      title: notice.title,
-      message: notice.message,
-      audience: notice.audience,
-      priority: notice.priority,
-      expirationDate: notice.expirationDate ? new Date(notice.expirationDate).toISOString().split('T')[0] : ''
-    });
-    setEditMode(true);
-    setOpenDialog('create');
-  };
-
-  const handleOpenViewDialog = (notice) => {
+  // Dialog handlers
+  const handleOpenViewDialog = async (notice) => {
     setSelectedNotice(notice);
     setOpenDialog('view');
-  };
-
-  const handleFormSubmit = () => {
-    if (editMode) {
-      updateNotice();
-    } else {
-      createNotice();
+    
+    // Mark as read when viewing
+    if (!notice.isRead) {
+      await markAsRead(notice._id);
     }
   };
 
@@ -222,29 +148,27 @@ const HODNotifications = () => {
   }, [activeTab, currentPage, filters]);
 
   // Helper functions
-  const getAudienceIcon = (audience) => {
-    switch (audience) {
-      case 'students': return <SchoolIcon />;
-      case 'faculty': return <PersonIcon />;
-      case 'both': return <GroupIcon />;
-      default: return <NotificationsIcon />;
-    }
-  };
-
-  const getAudienceColor = (audience) => {
-    switch (audience) {
-      case 'students': return 'primary';
-      case 'faculty': return 'secondary';
-      case 'both': return 'success';
-      default: return 'default';
-    }
-  };
-
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'high': return 'error';
       case 'medium': return 'warning';
       case 'low': return 'info';
+      default: return 'default';
+    }
+  };
+
+  const getSenderIcon = (senderRole) => {
+    switch (senderRole) {
+      case 'hod': return <PersonIcon />;
+      case 'faculty': return <SchoolIcon />;
+      default: return <AnnouncementIcon />;
+    }
+  };
+
+  const getSenderColor = (senderRole) => {
+    switch (senderRole) {
+      case 'hod': return 'primary';
+      case 'faculty': return 'secondary';
       default: return 'default';
     }
   };
@@ -274,67 +198,51 @@ const HODNotifications = () => {
           gap: 2
         }}>
           <NotificationsIcon sx={{ fontSize: 40, color: '#1976d2' }} />
-          HOD Notifications
+          My Notifications
         </Typography>
         
         {/* Stats Cards */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={4}>
             <Card sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box>
-                    <Typography variant="h4" component="div">{stats.sent}</Typography>
-                    <Typography variant="body2">Sent Notices</Typography>
-                  </Box>
-                  <SendIcon sx={{ fontSize: 40, opacity: 0.8 }} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box>
-                    <Typography variant="h4" component="div">{stats.received}</Typography>
-                    <Typography variant="body2">Received Notices</Typography>
+                    <Typography variant="h4" component="div">{stats.total}</Typography>
+                    <Typography variant="body2">Total Notices</Typography>
                   </Box>
                   <NotificationsIcon sx={{ fontSize: 40, opacity: 0.8 }} />
                 </Box>
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: 'white' }}>
+          <Grid item xs={12} sm={6} md={4}>
+            <Card sx={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white' }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box>
-                    <Typography variant="h4" component="div">{notices.length}</Typography>
-                    <Typography variant="body2">Current Page</Typography>
+                    <Typography variant="h4" component="div">{stats.unread}</Typography>
+                    <Typography variant="body2">Unread Notices</Typography>
                   </Box>
-                  <ViewIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+                  <Badge badgeContent={stats.unread} color="error">
+                    <AnnouncementIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+                  </Badge>
                 </Box>
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleOpenCreateDialog}
-              sx={{ 
-                height: '100%',
-                minHeight: 100,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
-                }
-              }}
-              fullWidth
-            >
-              Create New Notice
-            </Button>
+          <Grid item xs={12} sm={6} md={4}>
+            <Card sx={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: 'white' }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography variant="h4" component="div">{stats.read}</Typography>
+                    <Typography variant="body2">Read Notices</Typography>
+                  </Box>
+                  <MarkReadIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+                </Box>
+              </CardContent>
+            </Card>
           </Grid>
         </Grid>
       </Box>
@@ -344,9 +252,23 @@ const HODNotifications = () => {
         <CardContent>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
-              <Tab label="All Notices" />
-              <Tab label="Sent" />
-              <Tab label="Received" />
+              <Tab 
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    All Notices
+                    {stats.total > 0 && <Badge badgeContent={stats.total} color="primary" />}
+                  </Box>
+                } 
+              />
+              <Tab 
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    Unread
+                    {stats.unread > 0 && <Badge badgeContent={stats.unread} color="error" />}
+                  </Box>
+                } 
+              />
+              <Tab label="Read" />
             </Tabs>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Tooltip title="Refresh">
@@ -366,21 +288,6 @@ const HODNotifications = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Audience</InputLabel>
-                <Select
-                  value={filters.audience}
-                  label="Audience"
-                  onChange={(e) => setFilters({...filters, audience: e.target.value})}
-                >
-                  <MenuItem value="">All</MenuItem>
-                  <MenuItem value="students">Students</MenuItem>
-                  <MenuItem value="faculty">Faculty</MenuItem>
-                  <MenuItem value="both">Both</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth size="small">
                 <InputLabel>Priority</InputLabel>
                 <Select
                   value={filters.priority}
@@ -391,6 +298,20 @@ const HODNotifications = () => {
                   <MenuItem value="high">High</MenuItem>
                   <MenuItem value="medium">Medium</MenuItem>
                   <MenuItem value="low">Low</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Sender</InputLabel>
+                <Select
+                  value={filters.sender}
+                  label="Sender"
+                  onChange={(e) => setFilters({...filters, sender: e.target.value})}
+                >
+                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="hod">HOD</MenuItem>
+                  <MenuItem value="faculty">Faculty</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -434,7 +355,7 @@ const HODNotifications = () => {
                 No notices found
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Create your first notice to get started
+                You'll see notices from your faculty and HOD here
               </Typography>
             </Box>
           ) : (
@@ -444,7 +365,7 @@ const HODNotifications = () => {
                   <TableHead>
                     <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
                       <TableCell><strong>Title</strong></TableCell>
-                      <TableCell><strong>Audience</strong></TableCell>
+                      <TableCell><strong>From</strong></TableCell>
                       <TableCell><strong>Priority</strong></TableCell>
                       <TableCell><strong>Date</strong></TableCell>
                       <TableCell><strong>Status</strong></TableCell>
@@ -453,20 +374,39 @@ const HODNotifications = () => {
                   </TableHead>
                   <TableBody>
                     {notices.map((notice) => (
-                      <TableRow key={notice._id} hover>
+                      <TableRow 
+                        key={notice._id} 
+                        hover
+                        sx={{ 
+                          backgroundColor: !notice.isRead ? 'rgba(25, 118, 210, 0.04)' : 'inherit',
+                          borderLeft: !notice.isRead ? '4px solid #1976d2' : 'none'
+                        }}
+                      >
                         <TableCell>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 'medium' }}>
-                            {notice.title}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" noWrap>
-                            {notice.message.substring(0, 50)}...
-                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {!notice.isRead && (
+                              <Box sx={{ 
+                                width: 8, 
+                                height: 8, 
+                                borderRadius: '50%', 
+                                backgroundColor: '#1976d2' 
+                              }} />
+                            )}
+                            <Box>
+                              <Typography variant="subtitle2" sx={{ fontWeight: 'medium' }}>
+                                {notice.title}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary" noWrap>
+                                {notice.message.substring(0, 50)}...
+                              </Typography>
+                            </Box>
+                          </Box>
                         </TableCell>
                         <TableCell>
                           <Chip
-                            icon={getAudienceIcon(notice.audience)}
-                            label={notice.audience.charAt(0).toUpperCase() + notice.audience.slice(1)}
-                            color={getAudienceColor(notice.audience)}
+                            icon={getSenderIcon(notice.senderRole)}
+                            label={notice.senderRole === 'hod' ? 'HOD' : 'Faculty'}
+                            color={getSenderColor(notice.senderRole)}
                             size="small"
                           />
                         </TableCell>
@@ -485,8 +425,8 @@ const HODNotifications = () => {
                         </TableCell>
                         <TableCell>
                           <Chip
-                            label={notice.isExpired ? 'Expired' : 'Active'}
-                            color={notice.isExpired ? 'error' : 'success'}
+                            label={notice.isExpired ? 'Expired' : notice.isRead ? 'Read' : 'Unread'}
+                            color={notice.isExpired ? 'error' : notice.isRead ? 'success' : 'warning'}
                             size="small"
                           />
                         </TableCell>
@@ -501,24 +441,17 @@ const HODNotifications = () => {
                                 <ViewIcon />
                               </IconButton>
                             </Tooltip>
-                            <Tooltip title="Edit">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleOpenEditDialog(notice)}
-                                sx={{ color: 'warning.main' }}
-                              >
-                                <EditIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Delete">
-                              <IconButton
-                                size="small"
-                                onClick={() => deleteNotice(notice._id)}
-                                sx={{ color: 'error.main' }}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </Tooltip>
+                            {!notice.isRead && (
+                              <Tooltip title="Mark as Read">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => markAsRead(notice._id)}
+                                  sx={{ color: 'success.main' }}
+                                >
+                                  <MarkReadIcon />
+                                </IconButton>
+                              </Tooltip>
+                            )}
                           </Stack>
                         </TableCell>
                       </TableRow>
@@ -540,107 +473,6 @@ const HODNotifications = () => {
           )}
         </CardContent>
       </Card>
-
-      {/* Create/Edit Notice Dialog */}
-      <Dialog 
-        open={openDialog === 'create'} 
-        onClose={() => setOpenDialog('')}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle sx={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1
-        }}>
-          <NotificationsIcon />
-          {editMode ? 'Edit Notice' : 'Create New Notice'}
-        </DialogTitle>
-        <DialogContent sx={{ mt: 2 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Title"
-                value={noticeForm.title}
-                onChange={(e) => setNoticeForm({...noticeForm, title: e.target.value})}
-                required
-                sx={{ mb: 2 }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Message"
-                multiline
-                rows={4}
-                value={noticeForm.message}
-                onChange={(e) => setNoticeForm({...noticeForm, message: e.target.value})}
-                required
-                sx={{ mb: 2 }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Audience</InputLabel>
-                <Select
-                  value={noticeForm.audience}
-                  label="Audience"
-                  onChange={(e) => setNoticeForm({...noticeForm, audience: e.target.value})}
-                >
-                  <MenuItem value="students">👨‍🎓 Students</MenuItem>
-                  <MenuItem value="faculty">👨‍🏫 Faculty</MenuItem>
-                  <MenuItem value="both">👥 Both</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Priority</InputLabel>
-                <Select
-                  value={noticeForm.priority}
-                  label="Priority"
-                  onChange={(e) => setNoticeForm({...noticeForm, priority: e.target.value})}
-                >
-                  <MenuItem value="low">🟢 Low</MenuItem>
-                  <MenuItem value="medium">🟡 Medium</MenuItem>
-                  <MenuItem value="high">🔴 High</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                type="date"
-                label="Expiration Date (Optional)"
-                InputLabelProps={{ shrink: true }}
-                value={noticeForm.expirationDate}
-                onChange={(e) => setNoticeForm({...noticeForm, expirationDate: e.target.value})}
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setOpenDialog('')} color="inherit">
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleFormSubmit}
-            variant="contained"
-            startIcon={editMode ? <EditIcon /> : <SendIcon />}
-            sx={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
-              }
-            }}
-          >
-            {editMode ? 'Update Notice' : 'Send Notice'}
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* View Notice Dialog */}
       <Dialog 
@@ -674,11 +506,11 @@ const HODNotifications = () => {
               <Divider sx={{ mb: 2 }} />
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Audience:</Typography>
+                  <Typography variant="body2" color="text.secondary">From:</Typography>
                   <Chip
-                    icon={getAudienceIcon(selectedNotice.audience)}
-                    label={selectedNotice.audience.charAt(0).toUpperCase() + selectedNotice.audience.slice(1)}
-                    color={getAudienceColor(selectedNotice.audience)}
+                    icon={getSenderIcon(selectedNotice.senderRole)}
+                    label={selectedNotice.senderRole === 'hod' ? 'HOD' : 'Faculty'}
+                    color={getSenderColor(selectedNotice.senderRole)}
                     sx={{ mt: 0.5 }}
                   />
                 </Grid>
@@ -693,7 +525,7 @@ const HODNotifications = () => {
                 </Grid>
                 <Grid item xs={12}>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Created: {formatDate(selectedNotice.createdAt)}
+                    Sent: {formatDate(selectedNotice.createdAt)}
                   </Typography>
                   {selectedNotice.expirationDate && (
                     <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -730,7 +562,6 @@ const HODNotifications = () => {
       </Snackbar>
     </Container>
   );
-
 };
 
-export default HODNotifications;
+export default StudentNotifications;

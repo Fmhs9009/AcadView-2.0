@@ -5,29 +5,27 @@ function UploadTimetable() {
   const [batches, setBatches] = useState([]);
   const [branches, setBranches] = useState([]);
   const [sections, setSections] = useState([]);
+  const [subjects, setSubjects] = useState([]);
   
   const [selectedBatch, setSelectedBatch] = useState('');
   const [selectedBranch, setSelectedBranch] = useState('');
   const [selectedSection, setSelectedSection] = useState('');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [academicYear, setAcademicYear] = useState('');
-  const [semester, setSemester] = useState('');
-  const [effectiveFrom, setEffectiveFrom] = useState('');
-  const [effectiveTo, setEffectiveTo] = useState('');
-  const [timetableType, setTimetableType] = useState('regular');
-  const [file, setFile] = useState(null);
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [day, setDay] = useState('Monday');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [room, setRoom] = useState('');
   const [classString, setClassString] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   // Fetch initial data
   useEffect(() => {
     fetchBatches();
     fetchBranches();
-    // Set current academic year
-    const currentYear = new Date().getFullYear();
-    setAcademicYear(`${currentYear}-${currentYear + 1}`);
+    fetchSubjects();
   }, []);
 
   const fetchBatches = async () => {
@@ -55,6 +53,20 @@ function UploadTimetable() {
         { _id: '2', name: 'ECE' },
         { _id: '3', name: 'ME' },
         { _id: '4', name: 'CE' }
+      ]);
+    }
+  };
+
+  const fetchSubjects = async () => {
+    try {
+      const response = await axios.get('/api/subjects');
+      setSubjects(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching subjects:', error);
+      setSubjects([
+        { _id: '1', name: 'Data Structures', code: 'CSE101' },
+        { _id: '2', name: 'Discrete Mathematics', code: 'MAT201' },
+        { _id: '3', name: 'Algorithms', code: 'CSE202' }
       ]);
     }
   };
@@ -103,7 +115,7 @@ function UploadTimetable() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!selectedBatch || !selectedBranch || !selectedSection || !title || !academicYear || !semester || !effectiveFrom) {
+    if (!selectedBatch || !selectedBranch || !selectedSection || !selectedSubject || !day || !startTime || !endTime || !room) {
       setMessage('Please fill all required fields');
       return;
     }
@@ -121,65 +133,51 @@ function UploadTimetable() {
 
       const classId = classResponse.data.data._id;
 
-      // Create form data for file upload
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('description', description);
-      formData.append('academicYear', academicYear);
-      formData.append('semester', semester);
-      formData.append('effectiveFrom', effectiveFrom);
-      formData.append('effectiveTo', effectiveTo);
-      formData.append('timetableType', timetableType);
-      formData.append('classId', classId);
-      formData.append('facultyId', '507f1f77bcf86cd799439011'); // Replace with actual faculty ID from auth
-      
-      if (file) {
-        formData.append('file', file);
-      }
+      // Create timetable entry
+      const timetableData = {
+        day,
+        startTime,
+        endTime,
+        room,
+        subjectId: selectedSubject,
+        classId,
+        facultyId: '507f1f77bcf86cd799439011' // Replace with actual faculty ID from auth
+      };
 
-      const response = await axios.post('/api/timetables', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const response = await axios.post('/api/timetables', timetableData);
 
-      setMessage('Timetable uploaded successfully!');
+      setMessage('Timetable entry added successfully!');
       // Reset form
-      setTitle('');
-      setDescription('');
-      setSemester('');
-      setEffectiveFrom('');
-      setEffectiveTo('');
-      setTimetableType('regular');
-      setFile(null);
+      setDay('Monday');
+      setStartTime('');
+      setEndTime('');
+      setRoom('');
+      setSelectedSubject('');
       
     } catch (error) {
-      console.error('Error uploading timetable:', error);
-      setMessage(error.response?.data?.message || 'Failed to upload timetable');
+      console.error('Error adding timetable entry:', error);
+      setMessage(error.response?.data?.message || 'Failed to add timetable entry');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 bg-white p-8 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-blue-800 mb-6">Upload Timetable</h2>
-      
+    <div className="max-w-2xl mx-auto mt-10 bg-white p-8 rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold text-blue-800 mb-4">Upload Timetable</h2>
       {message && (
-        <div className={`mb-4 p-3 rounded ${message.includes('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+        <div className={`p-3 mb-4 rounded ${message.includes('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
           {message}
         </div>
       )}
-
       <form onSubmit={handleSubmit}>
-        {/* Class Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">Batch *</label>
+            <label className="block text-gray-700 mb-1">Batch</label>
             <select 
               value={selectedBatch} 
               onChange={e => setSelectedBatch(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border rounded px-2 py-1"
               required
             >
               <option value="">Select Batch</option>
@@ -189,11 +187,11 @@ function UploadTimetable() {
             </select>
           </div>
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">Branch *</label>
+            <label className="block text-gray-700 mb-1">Branch</label>
             <select 
               value={selectedBranch} 
               onChange={e => setSelectedBranch(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border rounded px-2 py-1"
               required
             >
               <option value="">Select Branch</option>
@@ -202,12 +200,14 @@ function UploadTimetable() {
               ))}
             </select>
           </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">Section *</label>
+            <label className="block text-gray-700 mb-1">Section</label>
             <select 
               value={selectedSection} 
               onChange={e => setSelectedSection(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border rounded px-2 py-1"
               required
               disabled={!selectedBatch || !selectedBranch}
             >
@@ -217,132 +217,81 @@ function UploadTimetable() {
               ))}
             </select>
           </div>
-        </div>
-
-        {/* Class String Display */}
-        {classString && (
-          <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800 font-medium">Target Class: {classString}</p>
-          </div>
-        )}
-
-        {/* Timetable Details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">Timetable Title *</label>
-            <input 
-              type="text" 
-              value={title} 
-              onChange={e => setTitle(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-              placeholder="Enter timetable title"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 mb-2 font-medium">Timetable Type</label>
+            <label className="block text-gray-700 mb-1">Subject</label>
             <select 
-              value={timetableType} 
-              onChange={e => setTimetableType(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={selectedSubject} 
+              onChange={e => setSelectedSubject(e.target.value)} 
+              className="w-full border rounded px-2 py-1"
+              required
             >
-              <option value="regular">Regular</option>
-              <option value="exam">Exam</option>
-              <option value="special">Special</option>
+              <option value="">Select Subject</option>
+              {subjects.map(subject => (
+                <option key={subject._id} value={subject._id}>{subject.name} ({subject.code})</option>
+              ))}
             </select>
           </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div>
-            <label className="block text-gray-700 mb-2 font-medium">Academic Year *</label>
-            <input 
-              type="text" 
-              value={academicYear} 
-              onChange={e => setAcademicYear(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-              placeholder="2023-2024"
-              required
-            />
+        {classString && (
+          <div className="mb-4 p-2 bg-gray-100 rounded">
+            <p className="text-gray-700">Class: <span className="font-semibold">{classString}</span></p>
           </div>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">Semester *</label>
+            <label className="block text-gray-700 mb-1">Day</label>
             <select 
-              value={semester} 
-              onChange={e => setSemester(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={day} 
+              onChange={e => setDay(e.target.value)} 
+              className="w-full border rounded px-2 py-1"
               required
             >
-              <option value="">Select Semester</option>
-              {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
-                <option key={sem} value={sem}>{sem}</option>
+              {days.map(d => (
+                <option key={d} value={d}>{d}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">Effective From *</label>
+            <label className="block text-gray-700 mb-1">Room</label>
             <input 
-              type="date" 
-              value={effectiveFrom} 
-              onChange={e => setEffectiveFrom(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="text" 
+              value={room} 
+              onChange={e => setRoom(e.target.value)} 
+              className="w-full border rounded px-2 py-1" 
+              placeholder="Room Number/Name"
               required
             />
           </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">Effective To (Optional)</label>
+            <label className="block text-gray-700 mb-1">Start Time</label>
             <input 
-              type="date" 
-              value={effectiveTo} 
-              onChange={e => setEffectiveTo(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="time" 
+              value={startTime} 
+              onChange={e => setStartTime(e.target.value)} 
+              className="w-full border rounded px-2 py-1"
+              required
             />
           </div>
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">Timetable File *</label>
+            <label className="block text-gray-700 mb-1">End Time</label>
             <input 
-              type="file" 
-              onChange={e => setFile(e.target.files[0])} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+              type="time" 
+              value={endTime} 
+              onChange={e => setEndTime(e.target.value)} 
+              className="w-full border rounded px-2 py-1"
               required
             />
           </div>
         </div>
-
-        <div className="mb-6">
-          <label className="block text-gray-700 mb-2 font-medium">Description</label>
-          <textarea 
-            value={description} 
-            onChange={e => setDescription(e.target.value)} 
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-            placeholder="Enter timetable description (optional)"
-            rows="4"
-          />
-        </div>
-
-        <div className="flex justify-end">
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            {loading ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Uploading...
-              </>
-            ) : (
-              'Upload Timetable'
-            )}
-          </button>
-        </div>
+        <button 
+          type="submit" 
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-blue-300"
+          disabled={loading}
+        >
+          {loading ? 'Adding...' : 'Add Timetable Entry'}
+        </button>
       </form>
     </div>
   );

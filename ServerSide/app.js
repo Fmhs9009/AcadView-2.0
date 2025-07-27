@@ -9,11 +9,12 @@ const facultyRoutes = require("./Routes/facultyRoutes");
 const subjectRoutes = require("./Routes/subjectRoutes");
 const adminRoutes = require("./Routes/adminRoutes");
 const hodRoutes = require("./Routes/hodRoutes");
-const hodManagementRoutes = require("./Routes/hodManagement");
 const assignmentRoutes = require("./Routes/assignmentRoutes");
 const timetableRoutes = require("./Routes/timetableRoutes");
 const classRoutes = require("./Routes/classRoutes");
 const studyMaterialRoutes = require("./Routes/studyMaterialRoutes");
+const batchRoutes = require("./Routes/batchRoutes");
+const noticeRoutes = require("./Routes/noticeRoutes");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -33,11 +34,12 @@ app.use("/api/faculties", facultyRoutes);
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/hods", hodRoutes);
-app.use("/api/hod-management", hodManagementRoutes);
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/timetables", timetableRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/study-materials", studyMaterialRoutes);
+app.use("/api/batches", batchRoutes);
+app.use("/api/notices", noticeRoutes);
 
 // Root route
 app.get("/", (req, res) => {
