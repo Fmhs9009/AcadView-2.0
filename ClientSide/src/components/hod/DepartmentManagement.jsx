@@ -174,12 +174,12 @@ const DepartmentManagement = () => {
       const batchYear = batchYearMatch ? batchYearMatch[1] : null;
       const semester = batchYear ? calculateSemester(batchYear) : 1;
       
-      await axios.post('/api/hod-management/student', {
+      await axios.post('/api/students', {
         ...newStudent,
         semester
       });
       setOpenDialog('');
-      fetchData();
+      fetchStudents();
       showSnackbar('Student added successfully');
     } catch (error) {
       showSnackbar(error.response?.data?.message || 'Error adding student', 'error');

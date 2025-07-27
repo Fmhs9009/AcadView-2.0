@@ -2,6 +2,7 @@ const express = require("express");
 // const path = require("path");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const authRoutes = require('./Routes/auth/authRoutes')
 const studentRoutes = require("./Routes/studentRoutes");
 const branchRoutes = require("./Routes/branchRoutes");
 const semesterRoutes = require("./Routes/semesterRoutes");
@@ -22,9 +23,18 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // app.use(express.static(path.join(__dirname, "/public")));
-app.use(cors());
+app.use(cors(
+  {
+    // origin: true, // allow all origins
+    origin: "http://localhost:5173",
+    credentials: true,
+  }
+));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// Auth Routes
+app.use("/auth", authRoutes);
 
 // API Routes
 app.use("/api/students", studentRoutes);
@@ -38,7 +48,6 @@ app.use("/api/assignments", assignmentRoutes);
 app.use("/api/timetables", timetableRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/study-materials", studyMaterialRoutes);
-app.use("/api/batches", batchRoutes);
 app.use("/api/notices", noticeRoutes);
 
 // Root route

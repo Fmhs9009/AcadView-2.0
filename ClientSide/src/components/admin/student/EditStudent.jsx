@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import axios from '../../../config/axios';
 
 function EditStudent() {
   const navigate = useNavigate();
+  const { id } = useParams(); // You can fetch real data using this
+  const [branches, setBranches] = useState([]);
+  const [batches, setBatches] = useState([]);
 
   // Initial mock student data (replace with real fetched data)
   const [student, setStudent] = useState({
@@ -20,13 +24,38 @@ function EditStudent() {
     setStudent((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    // TODO: Send updated student to backend
-    console.log("Updated Student:", student);
-    alert("Student updated successfully!");
-    navigate("/students");
+    try {
+      const updatedStudentRes = await Promise.all([
+        axios.put(`/api/students/${id}`, student),
+      ]);
+      alert("Student updated successfully!");
+      navigate("/students");
+    } catch (error) {
+      console.log(error)
+    }
   };
+
+    const fetchData = async () => {
+    try {
+      const response = await axios.get(`/api/students/${id}`);
+      setStudent(response.data.data);
+      setStudent((prev)=>({...prev, 'profilePic':`https://ui-avatars.com/api/?name=${response.data.data.name}&background=random&rounded=true`}))
+      const [branchesRes, batchesRes] = await Promise.all([
+        axios.get('/api/branches'),
+        axios.get('/api/batches')
+      ]);
+      setBranches(branchesRes.data.data);
+      setBatches(batchesRes.data.data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(()=>{
+    fetchData()
+  }, [])
 
   return (
     <div className="max-w-4xl mx-auto px-4 mt-10">
@@ -62,32 +91,19 @@ function EditStudent() {
             <label className="block text-sm text-gray-600">Branch</label>
             <select
               name="branch"
-              value={student.branch}
+              value={student.branch?._id}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded"
             >
               <option value="">Select Branch</option>
-              <option value="CSE">CSE</option>
-              <option value="ECE">ECE</option>
-              <option value="ME">ME</option>
-              <option value="CE">CE</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600">Year</label>
-            <select
-              name="year"
-              value={student.year}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded"
-            >
-              <option value="">Select Year</option>
-              <option value="1st">1st Year</option>
-              <option value="2nd">2nd Year</option>
-              <option value="3rd">3rd Year</option>
-              <option value="4th">4th Year</option>
+              {
+                branches.map((b)=>{
+                  return(
+                    <option key={b._id} value={b._id} > {b.name}</option>
+                  )
+                })
+              }
             </select>
           </div>
           <div>
@@ -100,39 +116,14 @@ function EditStudent() {
               className="w-full px-4 py-2 border border-gray-300 rounded"
             >
               <option value="">Select Batch</option>
-              <option value="2025-2029">2025–2029</option>
-              <option value="2024-2028">2024–2028</option>
-              <option value="2023-2027">2023–2027</option>
-              <option value="2022-2026">2022–2026</option>
+              {
+                batches.map((b)=>{
+                  return(
+                    <option key={b._id} value={b.name}> {b.name}</option>
+                  )
+                })
+              }
             </select>
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600">Status</label>
-            <select
-              name="status"
-              value={student.status}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded"
-            >
-              <option value="">Select Status</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600">GPA</label>
-            <input
-              type="number"
-              name="gpa"
-              value={student.gpa}
-              onChange={handleChange}
-              min="0"
-              max="4"
-              step="0.1"
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded"
-            />
           </div>
         </div>
 

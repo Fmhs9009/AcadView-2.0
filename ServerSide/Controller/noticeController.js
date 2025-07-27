@@ -7,7 +7,12 @@ const Student = require('../Model/Student');
 const createNotice = async (req, res) => {
   try {
     const { title, message, audience, targetBatch, targetSection, priority, expirationDate } = req.body;
-    const { userId, userRole } = req.user || { userId: 'temp', userRole: 'HOD' }; // Temporary for testing
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
+    
+    if (!userId || !userRole) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
 
     // Validate audience based on role
     if (userRole === 'Faculty' && (audience === 'faculty' || audience === 'both')) {
@@ -60,7 +65,11 @@ const createNotice = async (req, res) => {
 const getHODNotices = async (req, res) => {
   try {
     const { type, audience, page = 1, limit = 10 } = req.query;
-    const { userId } = req.user || { userId: 'temp' }; // Temporary for testing
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
     
     let query = {};
     
@@ -136,7 +145,11 @@ const getHODNotices = async (req, res) => {
 const getFacultyNotices = async (req, res) => {
   try {
     const { type, batch, section, page = 1, limit = 10 } = req.query;
-    const { userId } = req.user || { userId: 'temp' }; // Temporary for testing
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
     
     let query = {};
     
@@ -215,7 +228,11 @@ const getFacultyNotices = async (req, res) => {
 const getStudentNotices = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
-    const { userId } = req.user || { userId: 'temp' }; // Temporary for testing
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
     
     // Get student info to filter notices
     const student = await Student.findById(userId);
@@ -274,7 +291,12 @@ const getStudentNotices = async (req, res) => {
 const markNoticeAsRead = async (req, res) => {
   try {
     const { noticeId } = req.params;
-    const { userId, userRole } = req.user || { userId: 'temp', userRole: 'HOD' }; // Temporary for testing
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
+    
+    if (!userId || !userRole) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
 
     const notice = await Notice.findById(noticeId);
     if (!notice) {
@@ -298,7 +320,11 @@ const updateNotice = async (req, res) => {
   try {
     const { noticeId } = req.params;
     const { title, message, priority, expirationDate } = req.body;
-    const { userId } = req.user || { userId: 'temp' }; // Temporary for testing
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
 
     const notice = await Notice.findById(noticeId);
     if (!notice) {
@@ -332,7 +358,11 @@ const updateNotice = async (req, res) => {
 const deleteNotice = async (req, res) => {
   try {
     const { noticeId } = req.params;
-    const { userId } = req.user || { userId: 'temp' }; // Temporary for testing
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
 
     const notice = await Notice.findById(noticeId);
     if (!notice) {
@@ -360,7 +390,12 @@ const deleteNotice = async (req, res) => {
 // Get notice statistics
 const getNoticeStats = async (req, res) => {
   try {
-    const { userId, userRole } = req.user || { userId: 'temp', userRole: 'HOD' }; // Temporary for testing
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
+    
+    if (!userId || !userRole) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
 
     let stats = {};
 
