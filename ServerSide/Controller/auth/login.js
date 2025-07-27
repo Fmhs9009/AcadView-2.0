@@ -24,7 +24,7 @@ const login = async (req, res) => {
             const token = jwt.sign({ id: admin._id, role: 'admin' }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' })
             // Setting the token in the cookie
             res.cookie('auth_token', token, {
-                httpOnly: true,
+                // httpOnly: true,
                 maxAge: 3600000 // 1 hour
             })
             res.status(200).json({
@@ -44,7 +44,7 @@ const login = async (req, res) => {
             const token = jwt.sign({ id: faculty._id, role: 'faculty' }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' })
             // Setting the token in the cookie
             res.cookie('auth_token', token, {
-                httpOnly: true,
+                // httpOnly: true,
                 maxAge: 3600000 // 1 hour
             })
             res.status(200).json({
@@ -86,7 +86,7 @@ const login = async (req, res) => {
             const token = jwt.sign({ id: hod._id, role: 'hod' }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' })
             // Setting the token in the cookie
             res.cookie('auth_token', token, {
-                httpOnly: true,
+                // httpOnly: true,
                 maxAge: 3600000 // 1 hour
             })
             res.status(200).json({
