@@ -23,7 +23,13 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // app.use(express.static(path.join(__dirname, "/public")));
-app.use(cors());
+app.use(cors(
+  {
+    // origin: true, // allow all origins
+    origin: "http://localhost:5173",
+    credentials: true,
+  }
+));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
