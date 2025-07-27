@@ -86,7 +86,7 @@ const addStudent = async (req, res) => {
       return res.status(400).json({ message: 'Invalid branch specified' });
     }
 
-    const hashPassword = await bcrypt.hash(password, 10);
+    const hashPassword = await bcrypt.hash(password.replaceAll('-',''), 10);
     const newStudent = new Student({
       name,
       email,
