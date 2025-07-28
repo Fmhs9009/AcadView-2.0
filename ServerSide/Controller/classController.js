@@ -1,185 +1,36 @@
 const Class = require('../Model/Class');
 const Batch = require('../Model/Batch');
 const Branch = require('../Model/Branch');
-const Section = require('../Model/Section');
-const Student = require('../Model/Student');
-
-// Get class string for a given batch, branch, and section
-const getClassString = async (req, res) => {
-  try {
-    const { batchId, branchId, sectionId } = req.query;
-
-    if (!batchId || !branchId || !sectionId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Batch ID, Branch ID, and Section ID are required'
-      });
-    }
-
-    // Fetch the batch to calculate current semester
-    const batch = await Batch.findById(batchId);
-    if (!batch) {
-      return res.status(404).json({
-        success: false,
-        message: 'Batch not found'
-      });
-    }
-
-    // Fetch branch and section for names
-    const [branch, section] = await Promise.all([
-      Branch.findById(branchId),
-      Section.findById(sectionId)
-    ]);
-
-    if (!branch || !section) {
-      return res.status(404).json({
-        success: false,
-        message: 'Branch or Section not found'
-      });
-    }
-
-    // Calculate current semester
-    const currentSemester = batch.getCurrentSemester();
-    
-    // Generate class string
-    const classString = `${currentSemester}${currentSemester === 1 ? 'st' : currentSemester === 2 ? 'nd' : currentSemester === 3 ? 'rd' : 'th'} Sem ${branch.name} ${section.name}`;
-
-    res.status(200).json({
-      success: true,
-      data: {
-        classString,
-        semester: currentSemester,
-        batch: batch.name,
-        branch: branch.name,
-        section: section.name
-      }
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to generate class string',
-      error: err.message
-    });
-  }
-};
-
-// Get or create a class for given parameters
-const getOrCreateClass = async (req, res) => {
-  try {
-    const { batchId, branchId, sectionId } = req.body;
-
-    if (!batchId || !branchId || !sectionId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Batch ID, Branch ID, and Section ID are required'
-      });
-    }
-
-    // Calculate current semester
-    const batch = await Batch.findById(batchId);
-    if (!batch) {
-      return res.status(404).json({
-        success: false,
-        message: 'Batch not found'
-      });
-    }
-
-    const currentSemester = batch.getCurrentSemester();
-
-    // Check if class already exists
-    let existingClass = await Class.findOne({
-      batch: batchId,
-      branch: branchId,
-      section: sectionId,
-      semester: currentSemester
-    }).populate('batch branch section');
-
-    if (existingClass) {
-      return res.status(200).json({
-        success: true,
-        data: existingClass
-      });
-    }
-
-    // Create new class
-    const newClass = new Class({
-      batch: batchId,
-      branch: branchId,
-      section: sectionId,
-      semester: currentSemester
-    });
-
-    await newClass.save();
-    await newClass.populate('batch branch section');
-
-    res.status(201).json({
-      success: true,
-      data: newClass
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get or create class',
-      error: err.message
-    });
-  }
-};
 
 // Get all classes
 const getAllClasses = async (req, res) => {
   try {
     const classes = await Class.find()
-      .populate('batch branch section')
-      .sort({ createdAt: -1 });
-
+      .populate('batch')
+      .populate('branch');
+    
     res.status(200).json({
       success: true,
       count: classes.length,
       data: classes
     });
-  } catch (err) {
+  } catch (error) {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch classes',
-      error: err.message
+      error: error.message
     });
   }
 };
 
-// Get classes by faculty (based on assigned subjects)
-const getClassesByFaculty = async (req, res) => {
+// Get a single class by ID
+const getClassById = async (req, res) => {
   try {
-    const { facultyId } = req.params;
+    const classObj = await Class.findById(req.params.id)
+      .populate('batch')
+      .populate('branch');
     
-    // This would require Faculty model to have assigned classes
-    // For now, return all classes
-    const classes = await Class.find()
-      .populate('batch branch section')
-      .sort({ createdAt: -1 });
-
-    res.status(200).json({
-      success: true,
-      count: classes.length,
-      data: classes
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch faculty classes',
-      error: err.message
-    });
-  }
-};
-
-// Get students in a specific class
-const getStudentsInClass = async (req, res) => {
-  try {
-    const { classId } = req.params;
-    
-    const classData = await Class.findById(classId)
-      .populate('batch branch section students');
-    
-    if (!classData) {
+    if (!classObj) {
       return res.status(404).json({
         success: false,
         message: 'Class not found'
@@ -188,24 +39,245 @@ const getStudentsInClass = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: {
-        class: classData,
-        students: classData.students
-      }
+      data: classObj
     });
-  } catch (err) {
+  } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch students in class',
-      error: err.message
+      message: 'Failed to fetch class',
+      error: error.message
+    });
+  }
+};
+
+// Create a new class
+const createClass = async (req, res) => {
+  try {
+    const { batchId, branchId, section } = req.body;
+
+    // Fetch batch and branch to create class string
+    const batch = await Batch.findById(batchId);
+    const branch = await Branch.findById(branchId);
+
+    if (!batch || !branch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid batch or branch ID'
+      });
+    }
+
+    // Create class string (e.g., "CSE-2021-A")
+    const classString = `${branch.name}-${batch.name}-${section}`;
+
+    // Check if class already exists
+    const existingClass = await Class.findOne({ classString });
+    if (existingClass) {
+      return res.status(400).json({
+        success: false,
+        message: 'Class already exists'
+      });
+    }
+
+    const newClass = new Class({
+      batch: batchId,
+      branch: branchId,
+      section,
+      classString
+    });
+
+    await newClass.save();
+
+    res.status(201).json({
+      success: true,
+      data: newClass
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create class',
+      error: error.message
+    });
+  }
+};
+
+// Get or create a class
+const getOrCreateClass = async (req, res) => {
+  try {
+    const { batchId, branchId, sectionId } = req.body;
+
+    // Fetch batch and branch to create class string
+    const batch = await Batch.findById(batchId);
+    const branch = await Branch.findById(branchId);
+
+    if (!batch || !branch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid batch or branch ID'
+      });
+    }
+
+    // Create class string (e.g., "CSE-2021-A")
+    const classString = `${branch.name}-${batch.name}-${sectionId}`;
+
+    // Check if class already exists
+    let classObj = await Class.findOne({ classString });
+    
+    // If not, create it
+    if (!classObj) {
+      classObj = new Class({
+        batch: batchId,
+        branch: branchId,
+        section: sectionId,
+        classString
+      });
+
+      await classObj.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      data: classObj
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get or create class',
+      error: error.message
+    });
+  }
+};
+
+// Generate class string
+const generateClassString = async (req, res) => {
+  try {
+    const { batchId, branchId, sectionId } = req.query;
+
+    // Fetch batch and branch to create class string
+    const batch = await Batch.findById(batchId);
+    const branch = await Branch.findById(branchId);
+
+    if (!batch || !branch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid batch or branch ID'
+      });
+    }
+
+    // Create class string (e.g., "CSE-2021-A")
+    const classString = `${branch.name}-${batch.name}-${sectionId}`;
+
+    res.status(200).json({
+      success: true,
+      classString
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate class string',
+      error: error.message
+    });
+  }
+};
+
+// Update a class
+const updateClass = async (req, res) => {
+  try {
+    const classObj = await Class.findById(req.params.id);
+    
+    if (!classObj) {
+      return res.status(404).json({
+        success: false,
+        message: 'Class not found'
+      });
+    }
+
+    // If updating batch, branch, or section, regenerate class string
+    if (req.body.batchId || req.body.branchId || req.body.section) {
+      const batchId = req.body.batchId || classObj.batch;
+      const branchId = req.body.branchId || classObj.branch;
+      const section = req.body.section || classObj.section;
+
+      // Fetch batch and branch to create class string
+      const batch = await Batch.findById(batchId);
+      const branch = await Branch.findById(branchId);
+
+      if (!batch || !branch) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid batch or branch ID'
+        });
+      }
+
+      // Create class string (e.g., "CSE-2021-A")
+      req.body.classString = `${branch.name}-${batch.name}-${section}`;
+
+      // Check if class string already exists for another class
+      const existingClass = await Class.findOne({
+        classString: req.body.classString,
+        _id: { $ne: req.params.id }
+      });
+
+      if (existingClass) {
+        return res.status(400).json({
+          success: false,
+          message: 'Class with this combination already exists'
+        });
+      }
+    }
+
+    // Update fields
+    const updatedClass = await Class.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: updatedClass
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update class',
+      error: error.message
+    });
+  }
+};
+
+// Delete a class
+const deleteClass = async (req, res) => {
+  try {
+    const classObj = await Class.findById(req.params.id);
+    
+    if (!classObj) {
+      return res.status(404).json({
+        success: false,
+        message: 'Class not found'
+      });
+    }
+
+    await Class.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Class deleted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete class',
+      error: error.message
     });
   }
 };
 
 module.exports = {
-  getClassString,
-  getOrCreateClass,
   getAllClasses,
-  getClassesByFaculty,
-  getStudentsInClass
+  getClassById,
+  createClass,
+  getOrCreateClass,
+  generateClassString,
+  updateClass,
+  deleteClass
 };

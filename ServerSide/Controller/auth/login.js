@@ -30,6 +30,7 @@ const login = async (req, res) => {
             res.status(200).json({
                 success: true,
                 message: "logged in successfully",
+                token: token
             })
         } 
         else if (role.toLowerCase() === 'faculty') {
@@ -50,6 +51,7 @@ const login = async (req, res) => {
             res.status(200).json({
                 success: true,
                 message: "logged in successfully",
+                token: token
             })
         }
         else if (role.toLowerCase() === 'student') {
@@ -72,6 +74,7 @@ const login = async (req, res) => {
             res.status(200).json({
                 success: true,
                 message: "logged in successfully",
+                token: token
             })
         }
         else if (role.toLowerCase() === 'hod') {
@@ -92,6 +95,7 @@ const login = async (req, res) => {
             res.status(200).json({
                 success: true,
                 message: "logged in successfully",
+                token: token
             })
         }
         else {

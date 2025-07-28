@@ -1,4 +1,3 @@
-// controllers/batchController.js
 const Batch = require('../Model/Batch');
 
 // Get all batches
@@ -31,7 +30,7 @@ const getBatchById = async (req, res) => {
         message: 'Batch not found'
       });
     }
-    
+
     res.status(200).json({
       success: true,
       data: batch
@@ -48,44 +47,39 @@ const getBatchById = async (req, res) => {
 // Create a new batch
 const createBatch = async (req, res) => {
   try {
-    const { name, startYear, endYear } = req.body;
-    
-    // Validate input
-    if (!name || !startYear || !endYear) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide name, startYear, and endYear'
-      });
-    }
-    
-    // Check if batch with the same name already exists
-    const existingBatch = await Batch.findOne({ name });
-    
-    if (existingBatch) {
-      return res.status(400).json({
-        success: false,
-        message: 'Batch with this name already exists'
-      });
-    }
+    const { startYear, endYear } = req.body;
     
     // Validate years
-    if (parseInt(startYear) >= parseInt(endYear)) {
+    if (endYear <= startYear) {
       return res.status(400).json({
         success: false,
         message: 'End year must be greater than start year'
       });
     }
-    
-    const batch = await Batch.create({
+
+    // Create batch name (e.g., "2021-2025")
+    const name = `${startYear}-${endYear}`;
+
+    // Check if batch already exists
+    const existingBatch = await Batch.findOne({ name });
+    if (existingBatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Batch already exists'
+      });
+    }
+
+    const newBatch = new Batch({
       name,
-      startYear: parseInt(startYear),
-      endYear: parseInt(endYear)
+      startYear,
+      endYear
     });
-    
+
+    await newBatch.save();
+
     res.status(201).json({
       success: true,
-      message: 'Batch created successfully',
-      data: batch
+      data: newBatch
     });
   } catch (error) {
     res.status(500).json({
@@ -99,52 +93,54 @@ const createBatch = async (req, res) => {
 // Update a batch
 const updateBatch = async (req, res) => {
   try {
-    const { name, startYear, endYear, isActive } = req.body;
+    const batch = await Batch.findById(req.params.id);
     
-    // Check if updating name, make sure it doesn't conflict with existing records
-    if (name) {
-      const existingBatch = await Batch.findOne({
-        name,
-        _id: { $ne: req.params.id }
-      });
-      
-      if (existingBatch) {
-        return res.status(400).json({
-          success: false,
-          message: 'Batch name already in use'
-        });
-      }
-    }
-    
-    // Validate years if both are provided
-    if (startYear && endYear && parseInt(startYear) >= parseInt(endYear)) {
-      return res.status(400).json({
-        success: false,
-        message: 'End year must be greater than start year'
-      });
-    }
-    
-    const updatedBatch = await Batch.findByIdAndUpdate(
-      req.params.id,
-      {
-        name,
-        startYear: startYear ? parseInt(startYear) : undefined,
-        endYear: endYear ? parseInt(endYear) : undefined,
-        isActive
-      },
-      { new: true, runValidators: true }
-    );
-    
-    if (!updatedBatch) {
+    if (!batch) {
       return res.status(404).json({
         success: false,
         message: 'Batch not found'
       });
     }
-    
+
+    // If updating years, regenerate name
+    if (req.body.startYear || req.body.endYear) {
+      const startYear = req.body.startYear || batch.startYear;
+      const endYear = req.body.endYear || batch.endYear;
+      
+      // Validate years
+      if (endYear <= startYear) {
+        return res.status(400).json({
+          success: false,
+          message: 'End year must be greater than start year'
+        });
+      }
+
+      // Create batch name
+      req.body.name = `${startYear}-${endYear}`;
+
+      // Check if batch name already exists for another batch
+      const existingBatch = await Batch.findOne({
+        name: req.body.name,
+        _id: { $ne: req.params.id }
+      });
+
+      if (existingBatch) {
+        return res.status(400).json({
+          success: false,
+          message: 'Batch with this name already exists'
+        });
+      }
+    }
+
+    // Update fields
+    const updatedBatch = await Batch.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
     res.status(200).json({
       success: true,
-      message: 'Batch updated successfully',
       data: updatedBatch
     });
   } catch (error) {
@@ -167,11 +163,20 @@ const deleteBatch = async (req, res) => {
         message: 'Batch not found'
       });
     }
+
+    // Check if batch is being used by any classes
+    const Class = require('../Model/Class');
+    const classesUsingBatch = await Class.countDocuments({ batch: req.params.id });
     
-    // TODO: Check if batch is being used by any sections or classes before deleting
-    
-    await batch.remove();
-    
+    if (classesUsingBatch > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot delete batch as it is being used by ${classesUsingBatch} classes`
+      });
+    }
+
+    await Batch.findByIdAndDelete(req.params.id);
+
     res.status(200).json({
       success: true,
       message: 'Batch deleted successfully'
@@ -185,32 +190,20 @@ const deleteBatch = async (req, res) => {
   }
 };
 
-// Get current semester for a batch
-const getCurrentSemester = async (req, res) => {
+// Get active batches
+const getActiveBatches = async (req, res) => {
   try {
-    const batch = await Batch.findById(req.params.id);
-    
-    if (!batch) {
-      return res.status(404).json({
-        success: false,
-        message: 'Batch not found'
-      });
-    }
-    
-    const currentSemester = batch.getCurrentSemester();
+    const batches = await Batch.find({ isActive: true }).sort({ startYear: -1 });
     
     res.status(200).json({
       success: true,
-      data: {
-        batchId: batch._id,
-        batchName: batch.name,
-        currentSemester
-      }
+      count: batches.length,
+      data: batches
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to get current semester',
+      message: 'Failed to fetch active batches',
       error: error.message
     });
   }
@@ -222,5 +215,5 @@ module.exports = {
   createBatch,
   updateBatch,
   deleteBatch,
-  getCurrentSemester
+  getActiveBatches
 };

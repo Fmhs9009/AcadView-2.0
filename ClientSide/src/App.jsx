@@ -48,6 +48,7 @@ function App() {
   const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem('role');
+    localStorage.removeItem('token');
     Cookies.remove('auth_token');
     navigate('/');
   };

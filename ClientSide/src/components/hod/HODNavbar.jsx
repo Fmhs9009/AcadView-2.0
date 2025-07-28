@@ -13,12 +13,6 @@ function HODNavbar({ handleLogout }) {
           <NavLink to="/hod/approvals" className={({isActive})=>`${isActive ? "text-emerald-400" : "text-white"}`}>Approvals</NavLink>
         </li>
         <li>
-          <NavLink to="/hod/students" className={({isActive})=>`${isActive ? "text-emerald-400" : "text-white"}`}>Students</NavLink>
-        </li>
-        <li>
-          <NavLink to="/hod/faculty" className={({isActive})=>`${isActive ? "text-emerald-400" : "text-white"}`}>Faculty</NavLink>
-        </li>
-        <li>
           <NavLink to="/hod/notifications" className={({isActive})=>`${isActive ? "text-emerald-400" : "text-white"}`}>Notifications</NavLink>
         </li>
         <li>
