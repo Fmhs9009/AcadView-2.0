@@ -4,7 +4,7 @@ const Student = require('../Model/Student');
 const getAllStudents = async (req, res) => {
   try {
     const students = await Student.find()
-      .populate('semester')
+      // .populate('semester')
       .populate('branch');
     
     res.status(200).json({
@@ -25,7 +25,7 @@ const getAllStudents = async (req, res) => {
 const getStudentById = async (req, res) => {
   try {
     const student = await Student.findById(req.params.id)
-      .populate('semester')
+      // .populate('semester')
       .populate('branch');
     
     if (!student) {
@@ -148,7 +148,8 @@ const updateStudent = async (req, res) => {
         batch
       },
       { new: true, runValidators: true }
-    ).populate('semester').populate('branch');
+    ).populate('branch');
+    // .populate('semester');
 
     if (!updatedStudent) {
       return res.status(404).json({
@@ -209,7 +210,7 @@ const getStudentsByFilter = async (req, res) => {
     if (batch) filter.batch = batch;
     
     const students = await Student.find(filter)
-      .populate('semester')
+      // .populate('semester')
       .populate('branch');
     
     res.status(200).json({

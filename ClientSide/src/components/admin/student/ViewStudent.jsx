@@ -1,23 +1,27 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeftIcon, AcademicCapIcon, EnvelopeIcon, UserIcon } from '@heroicons/react/24/outline';
+import axios  from '../../../config/axios';
 
 function ViewStudent() {
   const navigate = useNavigate();
   const { id } = useParams(); // You can fetch real data using this
 
-  // Mock student data
-  const student = {
-    id,
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    branch: "CSE",
-    year: "1st",
-    batch: "2025-2029",
-    status: "Active",
-    gpa: 3.8,
-    profilePic: `https://ui-avatars.com/api/?name=Alice+Johnson&background=random&rounded=true`,
-  };
+  const [student, setStudent] = useState({})
+
+  const fetchStudent = async () => {
+    try {
+      const response = await axios.get(`/api/students/${id}`);
+      setStudent(response.data.data);
+      setStudent((prev)=>({...prev, 'profilePic':`https://ui-avatars.com/api/?name=${response.data.data.name}&background=random&rounded=true`}))
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(()=>{
+    fetchStudent()
+  }, [])
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-8">
@@ -61,23 +65,15 @@ function ViewStudent() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-sm text-gray-700">
           <div>
             <p className="font-semibold text-gray-500">Branch</p>
-            <p>{student.branch}</p>
-          </div>
-          <div>
-            <p className="font-semibold text-gray-500">Year</p>
-            <p>{student.year}</p>
+            <p>{student.branch?.name}</p>
           </div>
           <div>
             <p className="font-semibold text-gray-500">Batch</p>
             <p>{student.batch}</p>
           </div>
           <div>
-            <p className="font-semibold text-gray-500">GPA</p>
-            <p>{student.gpa}</p>
-          </div>
-          <div>
-            <p className="font-semibold text-gray-500">Student ID</p>
-            <p>#{student.id}</p>
+            <p className="font-semibold text-gray-500">Enrollment Number</p>
+            <p>{student.enrollmentNo}</p>
           </div>
         </div>
       </div>

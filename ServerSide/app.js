@@ -2,6 +2,7 @@ const express = require("express");
 // const path = require("path");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const authRoutes = require('./Routes/auth/authRoutes')
 const studentRoutes = require("./Routes/studentRoutes");
 const branchRoutes = require("./Routes/branchRoutes");
 const semesterRoutes = require("./Routes/semesterRoutes");
@@ -9,11 +10,13 @@ const facultyRoutes = require("./Routes/facultyRoutes");
 const subjectRoutes = require("./Routes/subjectRoutes");
 const adminRoutes = require("./Routes/adminRoutes");
 const hodRoutes = require("./Routes/hodRoutes");
-const hodManagementRoutes = require("./Routes/hodManagement");
 const assignmentRoutes = require("./Routes/assignmentRoutes");
 const timetableRoutes = require("./Routes/timetableRoutes");
 const classRoutes = require("./Routes/classRoutes");
 const studyMaterialRoutes = require("./Routes/studyMaterialRoutes");
+const batchRoutes = require("./Routes/batchRoutes");
+const noticeRoutes = require("./Routes/noticeRoutes");
+const hodManagementRoutes = require("./Routes/hodManagement");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -21,23 +24,34 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // app.use(express.static(path.join(__dirname, "/public")));
-app.use(cors());
+app.use(cors(
+  {
+    // origin: true, // allow all origins
+    origin: "http://localhost:5173",
+    credentials: true,
+  }
+));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// Auth Routes
+app.use("/auth", authRoutes);
 
 // API Routes
 app.use("/api/students", studentRoutes);
 app.use("/api/branches", branchRoutes);
 app.use("/api/semesters", semesterRoutes);
-app.use("/api/faculties", facultyRoutes);
+app.use("/api/faculty", facultyRoutes);
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/hods", hodRoutes);
-app.use("/api/hod-management", hodManagementRoutes);
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/timetables", timetableRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/study-materials", studyMaterialRoutes);
+app.use("/api/batches", batchRoutes);
+app.use("/api/notices", noticeRoutes);
+app.use("/api/hod-management", hodManagementRoutes);
 
 // Root route
 app.get("/", (req, res) => {

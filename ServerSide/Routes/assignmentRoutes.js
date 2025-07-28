@@ -1,39 +1,25 @@
 const express = require('express');
 const router = express.Router();
+
+// Import controllers
+// Note: We need to create the assignmentController.js file as well
 const {
-  upload,
-  createAssignment,
   getAllAssignments,
-  getAssignmentsByClass,
-  getAssignmentsByFaculty,
   getAssignmentById,
+  createAssignment,
   updateAssignment,
   deleteAssignment,
-  downloadAssignment
+  getAssignmentsByClass,
+  getAssignmentsByFaculty
 } = require('../Controller/assignmentController');
 
-// Create assignment with file upload
-router.post('/', upload.single('file'), createAssignment);
-
-// Get all assignments with filtering
+// Define routes
 router.get('/', getAllAssignments);
-
-// Get assignments by class
-router.get('/class/:classId', getAssignmentsByClass);
-
-// Get assignments by faculty
-router.get('/faculty/:facultyId', getAssignmentsByFaculty);
-
-// Get assignment by ID
 router.get('/:id', getAssignmentById);
-
-// Update assignment
+router.post('/', createAssignment);
 router.put('/:id', updateAssignment);
-
-// Delete assignment
 router.delete('/:id', deleteAssignment);
-
-// Download assignment file
-router.get('/:id/download', downloadAssignment);
+router.get('/class/:classId', getAssignmentsByClass);
+router.get('/faculty/:facultyId', getAssignmentsByFaculty);
 
 module.exports = router;

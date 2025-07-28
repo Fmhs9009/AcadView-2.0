@@ -1,26 +1,24 @@
 const express = require('express');
 const router = express.Router();
+
+// Import controllers
 const {
-  getClassString,
-  getOrCreateClass,
   getAllClasses,
-  getClassesByFaculty,
-  getStudentsInClass
+  getClassById,
+  createClass,
+  getOrCreateClass,
+  generateClassString,
+  updateClass,
+  deleteClass
 } = require('../Controller/classController');
 
-// Get class string based on batch, branch, and section IDs
-router.get('/class-string', getClassString);
-
-// Get or create a class
-router.post('/get-or-create', getOrCreateClass);
-
-// Get all classes
+// Define routes
 router.get('/', getAllClasses);
-
-// Get classes by faculty
-router.get('/faculty/:facultyId', getClassesByFaculty);
-
-// Get students in a class
-router.get('/:classId/students', getStudentsInClass);
+router.get('/class-string', generateClassString);
+router.get('/:id', getClassById);
+router.post('/', createClass);
+router.post('/get-or-create', getOrCreateClass);
+router.put('/:id', updateClass);
+router.delete('/:id', deleteClass);
 
 module.exports = router;

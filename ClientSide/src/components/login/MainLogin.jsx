@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './login.css';
+import axios from '../../config/axios';
 
 // Icons for each role
 const roleIcons = {
@@ -100,9 +101,15 @@ const MainLogin = () => {
   // Auto-redirect if already logged in
   useEffect(() => {
     const role = localStorage.getItem('role');
-    if (role === 'Student') navigate('/student/dashboard');
-    else if (role === 'Faculty') navigate('/faculty/dashboard');
-    else if (role === 'Admin') navigate('/admin/dashboard');
+    const token = localStorage.getItem('token');
+    
+    // Only redirect if both role and token exist
+    if (role && token) {
+      if (role === 'Student') navigate('/student/dashboard');
+      else if (role === 'Faculty') navigate('/faculty/dashboard');
+      else if (role === 'Admin') navigate('/admin/dashboard');
+      else if (role === 'HOD') navigate('/hod/dashboard');
+    }
   }, [navigate]);
 
   const handleSubmit = (e) => {
@@ -115,13 +122,32 @@ const MainLogin = () => {
       return;
     }
     setTimeout(() => {
+      axios.post(
+        '/auth/login', {
+          email,
+          password,
+          role: selectedRole
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        // Store token in localStorage
+        if (res.data && res.data.token) {
+          localStorage.setItem('token', res.data.token);
+        }
+        
+        localStorage.setItem("role", selectedRole);
+        if (selectedRole === 'Student') navigate('/student/dashboard');
+        else if (selectedRole === 'Faculty') navigate('/faculty/dashboard');
+        else if (selectedRole === 'Admin') navigate('/admin/dashboard');
+        else if (selectedRole === 'HOD') navigate('/hod/dashboard');
+        else navigate('/');
+      })
+      .catch((err) => {
+        // TODO: will need to toast error message
+        console.log(err.response.data.message);
+      })
       setIsLoading(false);
-      localStorage.setItem("role", selectedRole);
-      if (selectedRole === 'Student') navigate('/student/dashboard');
-      else if (selectedRole === 'Faculty') navigate('/faculty/dashboard');
-      else if (selectedRole === 'Admin') navigate('/admin/dashboard');
-      else if (selectedRole === 'HOD') navigate('/hod/dashboard');
-      else navigate('/');
     }, 1000);
   };
 
