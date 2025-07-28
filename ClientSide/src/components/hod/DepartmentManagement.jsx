@@ -80,16 +80,15 @@ const DepartmentManagement = () => {
 
   const fetchData = async () => {
     try {
-      const [facultyRes, studentsRes, statsRes, batchesRes] = await Promise.all([
-        axios.get('/api/hod-management/faculty'),
-        axios.get('/api/hod-management/students', { params: filters }),
-        axios.get('/api/hod-management/statistics'),
+      const [facultyRes, studentsRes, batchesRes] = await Promise.all([
+        axios.get('/api/faculty'),
+        axios.get('/api/students', { params: filters }),
         axios.get('/api/batches')
       ]);
 
       setFaculty(Array.isArray(facultyRes.data) ? facultyRes.data : []);
       setStudents(Array.isArray(studentsRes.data) ? studentsRes.data : []);
-      setStats(statsRes.data || null);
+      setStats(null); // Remove stats for now
       setBatches(Array.isArray(batchesRes.data.data) ? batchesRes.data.data : []);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -130,7 +129,7 @@ const DepartmentManagement = () => {
     }
 
     try {
-      await axios.post('/api/hod-management/faculty', newFaculty);
+      await axios.post('/api/faculty', newFaculty);
       setOpenDialog('');
       fetchData();
       showSnackbar('Faculty added successfully');
@@ -179,7 +178,7 @@ const DepartmentManagement = () => {
         semester
       });
       setOpenDialog('');
-      fetchStudents();
+      fetchData();
       showSnackbar('Student added successfully');
     } catch (error) {
       showSnackbar(error.response?.data?.message || 'Error adding student', 'error');
@@ -201,7 +200,7 @@ const DepartmentManagement = () => {
 
   const handleRemoveStudent = async (id) => {
     try {
-      await axios.delete(`/api/hod-management/student/${id}`);
+      await axios.delete(`/api/students/${id}`);
       fetchData();
       showSnackbar('Student removed successfully');
     } catch (error) {

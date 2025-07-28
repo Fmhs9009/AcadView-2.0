@@ -40,7 +40,7 @@ app.use("/auth", authRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/branches", branchRoutes);
 app.use("/api/semesters", semesterRoutes);
-app.use("/api/faculties", facultyRoutes);
+app.use("/api/faculty", facultyRoutes);
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/hods", hodRoutes);
@@ -48,6 +48,7 @@ app.use("/api/assignments", assignmentRoutes);
 app.use("/api/timetables", timetableRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/study-materials", studyMaterialRoutes);
+app.use("/api/batches", batchRoutes);
 app.use("/api/notices", noticeRoutes);
 
 // Root route
