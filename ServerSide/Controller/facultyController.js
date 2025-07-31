@@ -1,4 +1,5 @@
 const Faculty = require('../Model/Faculty')
+const bcrypt = require('bcryptjs');
 
 // Get all Faculty
 const getAllFaculties = async (req, res) => {
@@ -46,7 +47,8 @@ const getFacultyById = async (req, res) => {
 
 const createFaculty = async (req, res) =>{
     try{
-        const {email,empId} = req.body;
+        const {email,empId, dob} = req.body;
+        const hashPassword = await bcrypt.hash(dob.replaceAll('-',''), 10);
         const existingFaculty = await Faculty.findOne({ 
                 $or: [{ email }, { empId }] 
         });
@@ -57,7 +59,7 @@ const createFaculty = async (req, res) =>{
             });
         }
         
-        const faculty = await Faculty.create(req.body)
+        const faculty = await Faculty.create({...req.body, password: hashPassword});
         res.status(201).json({
             success: true,
             data: faculty
