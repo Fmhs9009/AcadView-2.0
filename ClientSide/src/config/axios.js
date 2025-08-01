@@ -10,8 +10,10 @@ const instance = axios.create({
 
 // Add a request interceptor to include auth token
 instance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
+  (config) => {let token = null;
+    if(document.cookie){
+    token = document.cookie.split(';').find(row => row.startsWith('auth_token=')).split('=')[1];
+    }
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -29,7 +31,7 @@ instance.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
+      // localStorage.removeItem('token');
       window.location.href = '/';
     }
     return Promise.reject(error);
