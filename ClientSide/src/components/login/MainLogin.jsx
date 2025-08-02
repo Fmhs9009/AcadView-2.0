@@ -139,6 +139,13 @@ const MainLogin = () => {
         //   localStorage.setItem('token', res.data.token);
         // }
         
+        axios.get('auth/get_details')
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
         localStorage.setItem("role", selectedRole);
         if (selectedRole === 'Student') navigate('/student/dashboard');
         else if (selectedRole === 'Faculty') navigate('/faculty/dashboard');
