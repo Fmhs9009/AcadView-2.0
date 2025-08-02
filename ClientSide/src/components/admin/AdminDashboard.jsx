@@ -1,6 +1,8 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 
 function AdminDashboard() {
+  const user = useSelector((state) => state.userDetails.value);
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
@@ -29,7 +31,7 @@ function AdminDashboard() {
       
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-blue-800">Welcome, Admin 👨‍💼</h1>
+        <h1 className="text-3xl font-bold text-blue-800">Welcome, {user.data?.name} 👨‍💼</h1>
         <p className="text-gray-600 text-sm mt-1">{today}</p>
       </div>
 
