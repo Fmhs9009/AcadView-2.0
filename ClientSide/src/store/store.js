@@ -1,7 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit'
 import userDetailsSlice from '../redux/slice/UserSlice'
 
-import storage from 'redux-persist/lib/storage' // defaults to localStorage
+// import storage from 'redux-persist/lib/storage' // defaults to localStorage
+import storage from 'redux-persist/lib/storage/session' // Save to sessionStorage instead of localStorage
 import { persistReducer, persistStore } from 'redux-persist'
 import { combineReducers } from 'redux'
 
