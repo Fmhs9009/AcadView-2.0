@@ -207,8 +207,8 @@ function FacultyList() {
                   <td className="px-6 py-3">{faculty.department}</td>
                   {/* <td className="px-6 py-3">{faculty.branch?.name || '—'}</td> */}
                   <td className="px-6 py-3 space-x-2">
-                    <button onClick={() => navigate(`/faculty/view/${faculty._id}`)} className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"><ViewIcon /></button>
-                    <button onClick={() => navigate(`/faculty/edit/${faculty._id}`)} className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"><EditIcon /></button>
+                    <button onClick={() => navigate(`/faculties/view/${faculty._id}`)} className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"><ViewIcon /></button>
+                    <button onClick={() => navigate(`/faculties/edit/${faculty._id}`)} className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"><EditIcon /></button>
                     <button onClick={() => handleDelete(faculty._id)} className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"><DeleteIcon /></button>
                   </td>
                 </tr>
