@@ -15,7 +15,7 @@ const createNotice = async (req, res) => {
     }
 
     // Validate audience based on role
-    if (userRole === 'faculty' && (audience === 'faculty' || audience === 'both')) {
+    if (userRole === 'Faculty' && (audience === 'faculty' || audience === 'both')) {
       return res.status(403).json({ 
         message: 'Faculty can only send notices to students' 
       });
@@ -23,11 +23,11 @@ const createNotice = async (req, res) => {
 
     // Get sender information
     let sender, senderName, senderDepartment;
-    if (userRole === 'hod') {
-      sender = await HOD.findById(userId).populate('department');
+    if (userRole === 'HOD') {
+      sender = await HOD.findById(userId);
       senderName = sender?.name || 'HOD';
-      senderDepartment = sender?.department?.name || 'Computer Science';
-    } else if (userRole === 'faculty') {
+      senderDepartment = sender?.department || 'Computer Science';
+    } else if (userRole === 'Faculty') {
       sender = await Faculty.findById(userId);
       senderName = sender?.name || 'Faculty';
       senderDepartment = sender?.department || 'Computer Science';
@@ -37,7 +37,7 @@ const createNotice = async (req, res) => {
       title,
       message,
       sender: userId,
-      senderModel: userRole === 'hod' ? 'HOD' : 'Faculty',
+      senderModel: userRole,
       senderName,
       senderDepartment,
       audience,

@@ -1,5 +1,5 @@
 const express = require("express");
-// const path = require("path");
+const path = require("path");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const authRoutes = require('./Routes/auth/authRoutes')
@@ -16,14 +16,15 @@ const classRoutes = require("./Routes/classRoutes");
 const studyMaterialRoutes = require("./Routes/studyMaterialRoutes");
 const batchRoutes = require("./Routes/batchRoutes");
 const noticeRoutes = require("./Routes/noticeRoutes");
-const hodManagementRoutes = require("./Routes/hodManagement");
 const dotenv = require("dotenv");
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// app.use(express.static(path.join(__dirname, "/public")));
+app.use(express.static(path.join(__dirname, "/public")));
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(cors(
   {
     // origin: true, // allow all origins
@@ -41,7 +42,7 @@ app.use("/auth", authRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/branches", branchRoutes);
 app.use("/api/semesters", semesterRoutes);
-app.use("/api/faculty", facultyRoutes);
+app.use("/api/faculties", facultyRoutes);
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/hods", hodRoutes);
@@ -51,7 +52,6 @@ app.use("/api/classes", classRoutes);
 app.use("/api/study-materials", studyMaterialRoutes);
 app.use("/api/batches", batchRoutes);
 app.use("/api/notices", noticeRoutes);
-app.use("/api/hod-management", hodManagementRoutes);
 
 // Root route
 app.get("/", (req, res) => {
