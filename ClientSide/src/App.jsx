@@ -27,6 +27,9 @@ import HODDashboard from './components/hod/HODDashboard.jsx';
 import HODNavbar from './components/hod/HODNavbar.jsx';
 import HODPanel from './components/hod/HODPanel.jsx';
 import Cookies from 'js-cookie';
+import FacultyList from "./components/admin/faculty/FacultyList.jsx";
+import EditFaculty from "./components/admin/faculty/EditFaculty.jsx";
+import ViewFaculty from "./components/admin/faculty/ViewFacult.jsx";
 
 function RequireAuth({ allowedRoles, children }) {
   const role = localStorage.getItem('role');
@@ -85,6 +88,9 @@ function App() {
         <Route path="/students" element={<StudentList />} />
         <Route path="/students/edit/:id" element={<EditStudent />} />
         <Route path="/students/view/:id" element={<ViewStudent />} />
+        <Route path="/faculties" element={<FacultyList />} />
+        <Route path="/faculties/edit/:id" element={<EditFaculty />} />
+        <Route path="/faculties/view/:id" element={<ViewFaculty />} />
         <Route path="/results" element={<Results />} />
         <Route path="/profile" element={<Profile />} />
       </Route>
