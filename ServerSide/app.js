@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const authRoutes = require('./Routes/auth/authRoutes')
+const authRoutesGet = require('./Routes/auth/getDetails')
 const studentRoutes = require("./Routes/studentRoutes");
 const branchRoutes = require("./Routes/branchRoutes");
 const semesterRoutes = require("./Routes/semesterRoutes");
@@ -33,10 +34,12 @@ app.use(cors(
 ));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
 
 // Auth Routes
 app.use("/auth", authRoutes);
-
+app.use('/auth/get_details', authRoutesGet);
 // API Routes
 app.use("/api/students", studentRoutes);
 app.use("/api/branches", branchRoutes);

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './login.css';
 import axios from '../../config/axios';
+import {useDispatch, useSelector} from 'react-redux'
+import { setUserDetail } from '../../redux/slice/UserSlice';
 
 // Icons for each role
 const roleIcons = {
@@ -36,6 +38,8 @@ const MainLogin = () => {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const userDetails = useSelector((state)=> state.userDetails.value)
+  const dispatch = useDispatch()
   
   const roles = [
     { name: 'Student', description: 'Access your tasks and submissions.' },
@@ -139,6 +143,14 @@ const MainLogin = () => {
         //   localStorage.setItem('token', res.data.token);
         // }
         
+        axios.get('auth/get_details')
+        .then((res) => {
+          console.log(res);
+          dispatch(setUserDetail(res.data))
+        })
+        .catch((err) => {
+          console.log(err);
+        });
         localStorage.setItem("role", selectedRole);
         if (selectedRole === 'Student') navigate('/student/dashboard');
         else if (selectedRole === 'Faculty') navigate('/faculty/dashboard');
