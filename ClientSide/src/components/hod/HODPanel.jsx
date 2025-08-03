@@ -7,6 +7,7 @@ import HODApprovals from './HODApprovals';
 
 import HODProfile from './HODProfile';
 import DepartmentManagement from './DepartmentManagement';
+import TimetableManagement from './TimetableManagement';
 
 const HODPanel = () => {
   return (
@@ -17,6 +18,7 @@ const HODPanel = () => {
 
       <Route path="/profile" element={<HODProfile />} />
       <Route path="/department-management" element={<DepartmentManagement />} />
+      <Route path="/timetable-management" element={<TimetableManagement />} />
       <Route path="*" element={<Navigate to="/hod/dashboard" replace />} />
     </Routes>
   );

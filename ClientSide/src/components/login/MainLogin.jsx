@@ -101,11 +101,8 @@ const MainLogin = () => {
   // Auto-redirect if already logged in
   useEffect(() => {
     const role = localStorage.getItem('role');
-    let token = null;
-    if(document.cookie){
-    token = document.cookie.split(';').find(row => row.startsWith('auth_token=')).split('=')[1];
-    }
-    console.log(token);
+    const token = localStorage.getItem('token');
+    
     // Only redirect if both role and token exist
     if (role && token) {
       if (role === 'Student') navigate('/student/dashboard');
@@ -134,10 +131,10 @@ const MainLogin = () => {
       )
       .then((res) => {
         console.log(res);
-        // // Store token in localStorage
-        // if (res.data && res.data.token) {
-        //   localStorage.setItem('token', res.data.token);
-        // }
+        // Store token in localStorage
+        if (res.data && res.data.token) {
+          localStorage.setItem('token', res.data.token);
+        }
         
         localStorage.setItem("role", selectedRole);
         if (selectedRole === 'Student') navigate('/student/dashboard');
@@ -148,7 +145,7 @@ const MainLogin = () => {
       })
       .catch((err) => {
         // TODO: will need to toast error message
-        console.log(err);
+        console.log(err.response.data.message);
       })
       setIsLoading(false);
     }, 1000);
